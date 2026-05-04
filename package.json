@@ -1,0 +1,24 @@
+{
+  "name": "erp-industrial",
+  "version": "1.0.0",
+  "description": "ERP industrial responsivo com modulos de logistica, financeiro, RH, producao e manutencao.",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "erp",
+    "industrial",
+    "nodejs",
+    "pwa",
+    "mobile"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "engines": {
+    "node": ">=18"
+  }
+}
