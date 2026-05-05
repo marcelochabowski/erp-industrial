@@ -3,7 +3,10 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  admin,
+  ai,
   alerts,
+  automation,
   auditTrail,
   company,
   finance,
@@ -39,7 +42,10 @@ const modulePayloads = {
   sales,
   quality,
   fiscal,
-  projects
+  projects,
+  admin,
+  automation,
+  ai
 };
 
 const moduleOperations = {
@@ -113,6 +119,24 @@ const moduleOperations = {
     collection: "portfolio",
     idPrefix: "PRJ",
     required: ["name", "phase", "budget", "progress"]
+  },
+  admin: {
+    collection: "users",
+    idPrefix: "USR",
+    required: ["name", "email", "role", "unit"],
+    defaults: { status: "Ativo", mfa: "Pendente" }
+  },
+  automation: {
+    collection: "plcs",
+    idPrefix: "PLC",
+    required: ["name", "line", "protocol", "ip"],
+    defaults: { status: "Conectado", latency: 12, safety: "OK" }
+  },
+  ai: {
+    collection: "requests",
+    idPrefix: "IA",
+    required: ["requester", "scope", "question", "answer"],
+    defaults: { status: "Respondido", confidence: 86 }
   }
 };
 
@@ -212,7 +236,7 @@ const handleApi = async (req, res, pathname) => {
     sendJson(res, 200, {
       ok: true,
       service: "ERP Industrial API",
-      version: "1.1.0",
+      version: "1.2.0",
       timestamp: new Date().toISOString()
     });
     return true;

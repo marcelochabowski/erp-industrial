@@ -10,7 +10,10 @@ const icons = {
   handshake: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m11 17 2 2a2.8 2.8 0 0 0 4 0l3-3a2.8 2.8 0 0 0 0-4l-5-5a2.8 2.8 0 0 0-4 0l-1 1"/><path d="m13 7 4 4"/><path d="m8 11 2-2a2.8 2.8 0 0 1 4 0l1 1"/><path d="m2 14 4 4"/><path d="m6 18 4-4"/></svg>`,
   shield: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.7a1.2 1.2 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>`,
   file: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>`,
-  kanban: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="M15 4v16"/><path d="M6 8h.01"/><path d="M12 12h.01"/><path d="M18 9h.01"/></svg>`
+  kanban: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="M15 4v16"/><path d="M6 8h.01"/><path d="M12 12h.01"/><path d="M18 9h.01"/></svg>`,
+  userCog: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M2 21a8 8 0 0 1 12.3-6.76"/><circle cx="18" cy="17" r="3"/><path d="M18 13v1"/><path d="M18 20v1"/><path d="M14.5 15l.87.5"/><path d="M20.63 18.5l.87.5"/><path d="M14.5 19l.87-.5"/><path d="M20.63 15.5l.87-.5"/></svg>`,
+  cpu: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="10" y="10" width="4" height="4" rx="1"/><path d="M4 10H2"/><path d="M4 14H2"/><path d="M22 10h-2"/><path d="M22 14h-2"/><path d="M10 4V2"/><path d="M14 4V2"/><path d="M10 22v-2"/><path d="M14 22v-2"/></svg>`,
+  brain: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 3a3 3 0 0 0-3 3v1a3 3 0 0 0-2 5.24A3.5 3.5 0 0 0 7.5 18H9"/><path d="M15 3a3 3 0 0 1 3 3v1a3 3 0 0 1 2 5.24A3.5 3.5 0 0 1 16.5 18H15"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M9 8H7"/><path d="M15 8h2"/><path d="M9 14H7"/><path d="M15 14h2"/></svg>`
 };
 
 const state = {
@@ -184,6 +187,48 @@ const moduleOperations = {
       { name: "budget", label: "Orçamento", type: "number", placeholder: "450000" },
       { name: "progress", label: "Progresso (%)", type: "number", placeholder: "10" }
     ]
+  },
+  admin: {
+    title: "Novo usuário",
+    submitLabel: "Adicionar usuário",
+    collection: "users",
+    idPrefix: "USR",
+    statusFlow: ["Pendente", "Ativo", "Bloqueado"],
+    defaults: { status: "Ativo", mfa: "Pendente" },
+    fields: [
+      { name: "name", label: "Nome", placeholder: "Ex.: Ana Pereira" },
+      { name: "email", label: "E-mail", type: "email", placeholder: "usuario@empresa.local" },
+      { name: "role", label: "Perfil", type: "select", options: ["TI Admin", "Gestor Produção", "Financeiro", "Operador Chão de Fábrica", "Manutenção"] },
+      { name: "unit", label: "Unidade", type: "select", options: ["Unidade SP", "Corporativo", "Chão de fábrica", "CD Logístico"] }
+    ]
+  },
+  automation: {
+    title: "Novo PLC",
+    submitLabel: "Conectar PLC",
+    collection: "plcs",
+    idPrefix: "PLC",
+    statusFlow: ["Desconectado", "Oscilando", "Conectado"],
+    defaults: { status: "Conectado", latency: 12, safety: "OK" },
+    fields: [
+      { name: "name", label: "Nome do controlador", placeholder: "Ex.: PLC célula CNC 04" },
+      { name: "line", label: "Linha/Máquina", placeholder: "Ex.: CNC-04" },
+      { name: "protocol", label: "Protocolo", type: "select", options: ["OPC UA", "Modbus TCP", "EtherNet/IP", "Profinet"] },
+      { name: "ip", label: "IP industrial", placeholder: "10.20.4.14" }
+    ]
+  },
+  ai: {
+    title: "Nova pergunta para I.A",
+    submitLabel: "Registrar pergunta",
+    collection: "requests",
+    idPrefix: "IA",
+    statusFlow: ["Fila", "Analisando", "Respondido"],
+    defaults: { status: "Respondido", confidence: 86 },
+    fields: [
+      { name: "requester", label: "Solicitante", placeholder: "Ex.: PCP" },
+      { name: "scope", label: "Escopo", type: "select", options: ["Produção", "Financeiro", "Estoque", "TI", "Automação/PLC", "Qualidade"] },
+      { name: "question", label: "Pergunta", placeholder: "Ex.: qual prioridade da operação agora?" },
+      { name: "answer", label: "Resposta sugerida", placeholder: "Resumo da recomendação interna" }
+    ]
   }
 };
 
@@ -199,7 +244,10 @@ const moduleSignals = {
   sales: { value: "R$ 2,5 mi", label: "Pipeline", risk: "1 crédito pendente" },
   quality: { value: "1,7%", label: "Reprovação", risk: "1 lote bloqueado" },
   fiscal: { value: "R$ 4,5 mi", label: "Base fiscal", risk: "1 SEFAZ pendente" },
-  projects: { value: "58%", label: "CAPEX médio", risk: "1 risco alto" }
+  projects: { value: "58%", label: "CAPEX médio", risk: "1 risco alto" },
+  admin: { value: "128", label: "Usuários ativos", risk: "1 MFA pendente" },
+  automation: { value: "98,2%", label: "PLCs online", risk: "1 latência alta" },
+  ai: { value: "94%", label: "Confiança média", risk: "3 insights críticos" }
 };
 
 const processFlows = {
@@ -214,7 +262,10 @@ const processFlows = {
   sales: ["Lead", "Proposta", "Negociação", "Pedido", "Pós-venda"],
   quality: ["Inspeção", "NC", "Disposição", "Ação", "Eficácia"],
   fiscal: ["Documento", "Escrituração", "Apuração", "Obrigação", "Fechamento"],
-  projects: ["Ideia", "Business case", "Execução", "Go-live", "Benefícios"]
+  projects: ["Ideia", "Business case", "Execução", "Go-live", "Benefícios"],
+  admin: ["Usuário", "Perfil", "Permissão", "MFA", "Auditoria"],
+  automation: ["Conectar", "Coletar tags", "Validar segurança", "Comandar", "Apontar"],
+  ai: ["Pergunta", "Contexto ERP", "Análise", "Recomendação", "Ação"]
 };
 
 const moneyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -227,6 +278,8 @@ const numberFormatter = new Intl.NumberFormat("pt-BR");
 const qs = (selector) => document.querySelector(selector);
 let demoDataPromise;
 let toastTimer;
+let liveProductionTimer;
+let automationTimer;
 
 const escapeHtml = (value = "") =>
   String(value).replace(/[&<>"']/g, (char) => ({
@@ -304,7 +357,10 @@ const demoPayload = async (endpoint) => {
     sales: data.sales,
     quality: data.quality,
     fiscal: data.fiscal,
-    projects: data.projects
+    projects: data.projects,
+    admin: data.admin,
+    automation: data.automation,
+    ai: data.ai
   };
 
   if (endpoint === "/api/summary") {
@@ -347,15 +403,15 @@ const apiGet = async (endpoint) => {
 const badgeClass = (value = "") => {
   const normalized = value.toLowerCase();
 
-  if (["crítico", "crítica", "atrasado", "alta", "parada", "bloqueado", "reprovado"].some((term) => normalized.includes(term))) {
+  if (["crítico", "crítica", "atrasado", "alta", "parada", "bloqueado", "reprovado", "desconectado", "intertravado"].some((term) => normalized.includes(term))) {
     return "red";
   }
 
-  if (["atenção", "aprovar", "média", "setup", "aguardando", "análise", "cotação", "mitigando"].some((term) => normalized.includes(term))) {
+  if (["atenção", "aprovar", "média", "setup", "aguardando", "análise", "cotação", "mitigando", "oscilando", "pendente"].some((term) => normalized.includes(term))) {
     return "amber";
   }
 
-  if (["normal", "ativo", "finalizada", "operando", "no prazo", "programado", "aprovado", "apurado", "autorizada", "homologado"].some((term) => normalized.includes(term))) {
+  if (["normal", "ativo", "finalizada", "operando", "no prazo", "programado", "aprovado", "apurado", "autorizada", "homologado", "conectado", "ok", "respondido", "confiável"].some((term) => normalized.includes(term))) {
     return "green";
   }
 
@@ -708,10 +764,25 @@ const renderFacts = (data) => {
       ["Projetos", data.portfolio.length],
       ["CAPEX", moneyFormatter.format(data.portfolio.reduce((sum, item) => sum + item.budget, 0))],
       ["Riscos", data.risks.length]
+    ],
+    admin: () => [
+      ["Usuários", data.users.length],
+      ["Perfis", data.roles.length],
+      ["MFA pendente", data.users.filter((item) => item.mfa !== "Ativo").length]
+    ],
+    automation: () => [
+      ["PLCs", data.plcs.length],
+      ["Conectados", data.plcs.filter((item) => item.status === "Conectado").length],
+      ["Alarmes", data.alarms.length]
+    ],
+    ai: () => [
+      ["Consultas", data.requests.length],
+      ["Playbooks", data.playbooks.length],
+      ["Confiança", `${Math.round(data.requests.reduce((sum, item) => sum + item.confidence, 0) / data.requests.length)}%`]
     ]
   };
 
-  return builders[state.activeModule]().map(([label, value]) => ({ label, value }));
+  return (builders[state.activeModule]?.() || []).map(([label, value]) => ({ label, value }));
 };
 
 const processFlow = () => `
@@ -800,8 +871,44 @@ const renderHr = (data) => `
   </div>
 `;
 
+const liveProductionBoard = (cells = []) => `
+  <article class="live-floor full">
+    <div class="card-toolbar">
+      <h3>Produção ao vivo</h3>
+      <span class="live-pill">Tempo real</span>
+    </div>
+    <div class="live-grid">
+      ${cells
+        .map((cell) => {
+          const performance = Math.round((Number(cell.producedHour || 0) / Math.max(Number(cell.targetHour || 1), 1)) * 100);
+          return `
+            <section class="live-cell" data-live-line="${escapeHtml(cell.line)}">
+              <div class="live-cell-head">
+                <span>${escapeHtml(cell.line)}</span>
+                <strong class="badge ${badgeClass(cell.status)}" data-live-status>${escapeHtml(cell.status)}</strong>
+              </div>
+              <h4>${escapeHtml(cell.machine)}</h4>
+              <p>${escapeHtml(cell.order)} · ${escapeHtml(cell.operator)}</p>
+              <div class="live-metrics">
+                <span><b data-live-produced>${numberFormatter.format(cell.producedHour)}</b><small>un/h</small></span>
+                <span><b data-live-cycle>${numberFormatter.format(cell.cycle)}</b><small>ciclo s</small></span>
+                <span><b data-live-temp>${numberFormatter.format(cell.temperature)}°C</b><small>temp.</small></span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" data-live-progress style="--progress: ${Math.min(performance, 100)}%"></div>
+              </div>
+              <small>${performance}% da meta horária · Qualidade ${numberFormatter.format(cell.quality)}%</small>
+            </section>
+          `;
+        })
+        .join("")}
+    </div>
+  </article>
+`;
+
 const renderProduction = (data) => `
   <div class="module-grid">
+    ${liveProductionBoard(data.liveCells || [])}
     ${table("Ordens de produção", [
       { label: "OP", key: "id" },
       { label: "Item", key: "item" },
@@ -966,6 +1073,169 @@ const renderProjects = (data) => `
   </div>
 `;
 
+const yesNo = (value) => `<span class="permission-dot ${value ? "allowed" : ""}">${value ? "Sim" : "Não"}</span>`;
+
+const renderAdmin = (data) => `
+  <div class="module-grid">
+    ${table("Usuários e acessos", [
+      { label: "ID", key: "id" },
+      { label: "Nome", key: "name" },
+      { label: "E-mail", key: "email" },
+      { label: "Perfil", key: "role" },
+      { label: "Unidade", key: "unit" },
+      { label: "MFA", render: (row) => `<span class="badge ${badgeClass(row.mfa)}">${escapeHtml(row.mfa)}</span>` },
+      { label: "Status", render: (row) => `<span class="badge ${badgeClass(row.status)}">${escapeHtml(row.status)}</span>` }
+    ], data.users)}
+    ${table("Perfis de permissão", [
+      { label: "Perfil", key: "name" },
+      { label: "Usuários", render: (row) => numberFormatter.format(row.users) },
+      { label: "Permissões", render: (row) => numberFormatter.format(row.permissions) },
+      { label: "Risco", render: (row) => `<span class="badge ${badgeClass(row.risk)}">${escapeHtml(row.risk)}</span>` }
+    ], data.roles)}
+    ${table("Matriz de permissões", [
+      { label: "Módulo", key: "module" },
+      { label: "Ler", render: (row) => yesNo(row.read) },
+      { label: "Criar", render: (row) => yesNo(row.create) },
+      { label: "Aprovar", render: (row) => yesNo(row.approve) },
+      { label: "Admin", render: (row) => yesNo(row.admin) }
+    ], data.permissions)}
+    ${table("Sessões ativas", [
+      { label: "Usuário", key: "user" },
+      { label: "Dispositivo", key: "device" },
+      { label: "Local", key: "location" },
+      { label: "Último acesso", key: "lastAccess" },
+      { label: "Status", render: (row) => `<span class="badge ${badgeClass(row.status)}">${escapeHtml(row.status)}</span>` }
+    ], data.sessions)}
+  </div>
+`;
+
+const renderAutomation = (data) => `
+  <div class="module-grid">
+    <article class="plc-map full">
+      <div class="card-toolbar">
+        <h3>Mapa de automação industrial</h3>
+        <span class="live-pill">PLC / máquinas autônomas</span>
+      </div>
+      <div class="plc-grid">
+        ${data.plcs
+          .map(
+            (plc) => `
+              <section class="plc-node" data-plc-id="${escapeHtml(plc.id)}">
+                <div>
+                  <strong>${escapeHtml(plc.id)}</strong>
+                  <span class="badge ${badgeClass(plc.status)}">${escapeHtml(plc.status)}</span>
+                </div>
+                <p>${escapeHtml(plc.name)} · ${escapeHtml(plc.protocol)}</p>
+                <small>${escapeHtml(plc.ip)} · ${escapeHtml(plc.line)} · Safety ${escapeHtml(plc.safety)}</small>
+                <b data-plc-latency>${numberFormatter.format(plc.latency)} ms</b>
+              </section>
+            `
+          )
+          .join("")}
+      </div>
+    </article>
+    ${table("Máquinas autônomas", [
+      { label: "Ativo", key: "id" },
+      { label: "Tipo", key: "type" },
+      { label: "Tarefa", key: "task" },
+      { label: "Bateria", render: (row) => `${row.battery}%` },
+      { label: "Status", render: (row) => `<span class="badge ${badgeClass(row.status)}">${escapeHtml(row.status)}</span>` },
+      { label: "Zona", key: "zone" }
+    ], data.autonomousMachines)}
+    ${table("Tags industriais", [
+      { label: "Tag", key: "tag" },
+      { label: "Valor", key: "value" },
+      { label: "Origem", key: "source" },
+      { label: "Status", render: (row) => `<span class="badge ${badgeClass(row.status)}">${escapeHtml(row.status)}</span>` }
+    ], data.tags)}
+    ${table("Alarmes PLC", [
+      { label: "Alarme", key: "id" },
+      { label: "Ativo", key: "asset" },
+      { label: "Severidade", render: (row) => `<span class="badge ${badgeClass(row.severity)}">${escapeHtml(row.severity)}</span>` },
+      { label: "Mensagem", key: "message" },
+      { label: "Reconhecido", key: "acknowledged" }
+    ], data.alarms)}
+  </div>
+`;
+
+const buildInternalAiAnswer = (question = "", scope = "ERP") => {
+  const normalized = question.toLowerCase();
+
+  if (normalized.includes("produção") || normalized.includes("producao") || normalized.includes("linha") || normalized.includes("oee")) {
+    return "Prioridade operacional: recuperar a CNC-03, validar o PLC-CNC-03 e replanejar a OP-7813. A linha parada derruba OEE e pode atrasar pedidos vinculados.";
+  }
+
+  if (normalized.includes("estoque") || normalized.includes("material") || normalized.includes("mrp")) {
+    return "Risco de estoque: MAT-1020 está abaixo do mínimo. Sugiro compra emergencial, reserva para OP-7811 e comunicação ao PCP.";
+  }
+
+  if (normalized.includes("plc") || normalized.includes("automação") || normalized.includes("automacao") || normalized.includes("máquina") || normalized.includes("maquina")) {
+    return "Automação: PLC-CNC-03 está oscilando e deve ser validado antes de liberar comando automático. Verifique rede industrial, intertravamento e latência OPC UA.";
+  }
+
+  if (normalized.includes("permiss") || normalized.includes("usuário") || normalized.includes("usuario") || normalized.includes("acesso")) {
+    return "Governança: existe MFA pendente. Recomendo bloquear permissões críticas até ativar MFA e revisar perfis com aprovação financeira ou PLC.";
+  }
+
+  if (normalized.includes("financeiro") || normalized.includes("caixa") || normalized.includes("pagamento")) {
+    return "Financeiro: há recebível atrasado e pagamento pendente. Priorize cobrança do título vencido e aprovação do PAG-3319 para evitar ruptura operacional.";
+  }
+
+  return `Análise ${scope}: priorize exceções críticas, valide impacto em produção, estoque e permissões, e registre a ação no fluxo do módulo responsável.`;
+};
+
+const renderAi = (data) => `
+  <div class="module-grid">
+    <article class="ai-console full">
+      <div class="card-toolbar">
+        <h3>I.A interna do ERP</h3>
+        <span class="live-pill">Local e contextual</span>
+      </div>
+      <div class="ai-grid">
+        <div class="ai-prompt">
+          <label for="aiRequester">Solicitante</label>
+          <input id="aiRequester" value="Operador ERP" />
+          <label for="aiScope">Escopo</label>
+          <select id="aiScope">
+            <option>Produção</option>
+            <option>Automação/PLC</option>
+            <option>Estoque</option>
+            <option>Financeiro</option>
+            <option>Administração</option>
+          </select>
+          <label for="aiQuestion">Pergunta</label>
+          <textarea id="aiQuestion" rows="4" placeholder="Ex.: qual gargalo devo atacar agora?"></textarea>
+          <button class="primary-action" type="button" id="aiAskButton">${icons.brain} Perguntar</button>
+        </div>
+        <div class="ai-answer" id="aiAnswerBox">
+          <strong>Pronto para analisar</strong>
+          <p>Use a I.A interna para cruzar produção, PLC, estoque, financeiro e permissões do ERP.</p>
+        </div>
+      </div>
+    </article>
+    ${table("Consultas da I.A", [
+      { label: "ID", key: "id" },
+      { label: "Solicitante", key: "requester" },
+      { label: "Escopo", key: "scope" },
+      { label: "Pergunta", key: "question" },
+      { label: "Resposta", key: "answer" },
+      { label: "Conf.", render: (row) => `${row.confidence}%` },
+      { label: "Status", render: (row) => `<span class="badge ${badgeClass(row.status)}">${escapeHtml(row.status)}</span>` }
+    ], data.requests)}
+    ${table("Playbooks automáticos", [
+      { label: "Playbook", key: "name" },
+      { label: "Gatilho", key: "trigger" },
+      { label: "Ação", key: "action" },
+      { label: "Status", render: (row) => `<span class="badge ${badgeClass(row.status)}">${escapeHtml(row.status)}</span>` }
+    ], data.playbooks)}
+    ${table("Insights internos", [
+      { label: "Área", key: "area" },
+      { label: "Insight", key: "insight" },
+      { label: "Impacto", render: (row) => `<span class="badge ${badgeClass(row.impact)}">${escapeHtml(row.impact)}</span>` }
+    ], data.insights)}
+  </div>
+`;
+
 const moduleRenderers = {
   logistics: renderLogistics,
   finance: renderFinance,
@@ -978,7 +1248,10 @@ const moduleRenderers = {
   sales: renderSales,
   quality: renderQuality,
   fiscal: renderFiscal,
-  projects: renderProjects
+  projects: renderProjects,
+  admin: renderAdmin,
+  automation: renderAutomation,
+  ai: renderAi
 };
 
 const showToast = (message) => {
@@ -1090,6 +1363,36 @@ const createRecord = (config, payload, serverRecord = null) => {
     ...payload,
     ...(serverRecord || {})
   };
+};
+
+const saveOperationRecord = async (moduleId, payload) => {
+  const config = getOperationConfig(moduleId);
+  const module = getModule(moduleId);
+  let serverRecord = null;
+
+  try {
+    const response = await fetch(operationEndpoint(moduleId, config), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    serverRecord = await response.json();
+  } catch (error) {
+    console.info("Registro salvo no modo local.", error.message);
+  }
+
+  const moduleData = state.moduleData[moduleId] || (await apiGet(`/api/modules/${moduleId}`));
+  const record = createRecord(config, payload, serverRecord);
+  moduleData[config.collection] = [record, ...(moduleData[config.collection] || [])];
+  state.moduleData[moduleId] = moduleData;
+  persistModuleData(moduleId, moduleData);
+  addAudit(`${module.name}: ${config.submitLabel.toLowerCase()} ${record[config.idKey || "id"]}.`);
+  return record;
 };
 
 const getActiveCollection = () => {
@@ -1209,6 +1512,119 @@ const advanceActiveRecord = async () => {
   await renderModule();
 };
 
+const clearLiveTimers = () => {
+  clearInterval(liveProductionTimer);
+  clearInterval(automationTimer);
+  liveProductionTimer = null;
+  automationTimer = null;
+};
+
+const setupProductionLive = () => {
+  if (state.activeModule !== "production") {
+    return;
+  }
+
+  const data = state.moduleData.production;
+  if (!data?.liveCells?.length) {
+    return;
+  }
+
+  liveProductionTimer = window.setInterval(() => {
+    data.liveCells.forEach((cell) => {
+      if (cell.status !== "Operando") {
+        return;
+      }
+
+      cell.producedHour = Math.min(cell.targetHour + 24, Math.max(0, cell.producedHour + Math.round(Math.random() * 8 - 2)));
+      cell.cycle = Math.max(30, cell.cycle + Math.round(Math.random() * 4 - 2));
+      cell.temperature = Math.max(35, Math.min(86, cell.temperature + Math.round(Math.random() * 4 - 1)));
+
+      const node = document.querySelector(`[data-live-line="${CSS.escape(cell.line)}"]`);
+      if (!node) {
+        return;
+      }
+
+      const performance = Math.round((cell.producedHour / Math.max(cell.targetHour, 1)) * 100);
+      node.querySelector("[data-live-produced]").textContent = numberFormatter.format(cell.producedHour);
+      node.querySelector("[data-live-cycle]").textContent = numberFormatter.format(cell.cycle);
+      node.querySelector("[data-live-temp]").textContent = `${numberFormatter.format(cell.temperature)}°C`;
+      node.querySelector("[data-live-progress]").style.setProperty("--progress", `${Math.min(performance, 100)}%`);
+    });
+  }, 2600);
+};
+
+const setupAutomationLive = () => {
+  if (state.activeModule !== "automation") {
+    return;
+  }
+
+  const data = state.moduleData.automation;
+  if (!data?.plcs?.length) {
+    return;
+  }
+
+  automationTimer = window.setInterval(() => {
+    data.plcs.forEach((plc) => {
+      if (plc.status === "Desconectado") {
+        return;
+      }
+
+      const base = plc.status === "Oscilando" ? 95 : 18;
+      plc.latency = Math.max(8, base + Math.round(Math.random() * 42));
+      const node = document.querySelector(`[data-plc-id="${CSS.escape(plc.id)}"] [data-plc-latency]`);
+
+      if (node) {
+        node.textContent = `${numberFormatter.format(plc.latency)} ms`;
+      }
+    });
+  }, 3000);
+};
+
+const setupInternalAi = () => {
+  if (state.activeModule !== "ai") {
+    return;
+  }
+
+  qs("#aiAskButton")?.addEventListener("click", async () => {
+    const requester = qs("#aiRequester").value.trim() || "Operador ERP";
+    const scope = qs("#aiScope").value;
+    const question = qs("#aiQuestion").value.trim();
+
+    if (!question) {
+      showToast("Digite uma pergunta para a I.A.");
+      return;
+    }
+
+    const answer = buildInternalAiAnswer(question, scope);
+    const confidence = Math.floor(84 + Math.random() * 13);
+    const answerBox = qs("#aiAnswerBox");
+
+    answerBox.innerHTML = `
+      <strong>Resposta da I.A interna</strong>
+      <p>${escapeHtml(answer)}</p>
+      <small>Confiança ${confidence}% · contexto ${escapeHtml(scope)}</small>
+    `;
+
+    await saveOperationRecord("ai", {
+      requester,
+      scope,
+      question,
+      answer,
+      confidence,
+      status: "Respondido"
+    });
+
+    qs("#aiQuestion").value = "";
+    showToast("I.A interna registrou a recomendação.");
+    await renderModule();
+    qs("#aiAnswerBox").innerHTML = `
+      <strong>Resposta da I.A interna</strong>
+      <p>${escapeHtml(answer)}</p>
+      <small>Confiança ${confidence}% · contexto ${escapeHtml(scope)}</small>
+    `;
+  });
+};
+
 const setupModuleActions = () => {
   qs("#moduleView")?.querySelector("[data-action='export']")?.addEventListener("click", exportActiveCollection);
   qs("#moduleView")?.querySelector("[data-action='advance']")?.addEventListener("click", advanceActiveRecord);
@@ -1217,9 +1633,13 @@ const setupModuleActions = () => {
     .forEach((button) => {
       button.addEventListener("click", () => showToast("Análise atualizada com os dados filtrados."));
     });
+  setupProductionLive();
+  setupAutomationLive();
+  setupInternalAi();
 };
 
 const renderModule = async () => {
+  clearLiveTimers();
   setModuleAccent();
   renderNavigation();
   renderTabs();
@@ -1327,33 +1747,9 @@ const setupDialog = () => {
     }
 
     const moduleId = state.activeModule;
-    const module = getModule(moduleId);
     const config = getOperationConfig(moduleId);
     const payload = operationPayloadFromForm(form, config);
-    let serverRecord = null;
-
-    try {
-      const response = await fetch(operationEndpoint(moduleId, config), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      serverRecord = await response.json();
-    } catch (error) {
-      console.info("Registro salvo no modo local.", error.message);
-    }
-
-    const moduleData = state.moduleData[moduleId] || (await apiGet(`/api/modules/${moduleId}`));
-    const record = createRecord(config, payload, serverRecord);
-    moduleData[config.collection] = [record, ...(moduleData[config.collection] || [])];
-    state.moduleData[moduleId] = moduleData;
-    persistModuleData(moduleId, moduleData);
-    addAudit(`${module.name}: ${config.submitLabel.toLowerCase()} ${record[config.idKey || "id"]}.`);
+    await saveOperationRecord(moduleId, payload);
     showToast("Registro salvo.");
     form.reset();
     dialog.close();

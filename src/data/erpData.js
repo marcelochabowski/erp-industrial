@@ -89,6 +89,27 @@ export const modules = [
     description: "Engenharia, CAPEX, cronograma, marcos, custos e riscos.",
     accent: "#c2410c",
     icon: "kanban"
+  },
+  {
+    id: "admin",
+    name: "Administração",
+    description: "Usuários, perfis, permissões, auditoria, MFA e governança.",
+    accent: "#334155",
+    icon: "userCog"
+  },
+  {
+    id: "automation",
+    name: "Automação/PLC",
+    description: "PLCs, máquinas autônomas, protocolos, tags e alarmes industriais.",
+    accent: "#0e7490",
+    icon: "cpu"
+  },
+  {
+    id: "ai",
+    name: "I.A Interna",
+    description: "Assistente interno para operação, riscos, produção e decisões do ERP.",
+    accent: "#4f46e5",
+    icon: "brain"
   }
 ];
 
@@ -140,6 +161,14 @@ export const kpis = [
     suffix: "lote",
     delta: -0.6,
     trend: "up"
+  },
+  {
+    id: "plc-online",
+    label: "PLCs conectados",
+    value: "98,2%",
+    suffix: "automação",
+    delta: 1.4,
+    trend: "up"
   }
 ];
 
@@ -183,6 +212,14 @@ export const alerts = [
     title: "Lote aguardando disposição",
     detail: "NC-7782 bloqueia 1.240 peças do cliente Atlas Máquinas.",
     due: "Imediato"
+  },
+  {
+    id: "AL-1029",
+    severity: "warning",
+    module: "Automação/PLC",
+    title: "Latência elevada no PLC da célula CNC",
+    detail: "PLC-CNC-03 oscilou acima de 120 ms e pode afetar apontamento automático.",
+    due: "Hoje, 16:30"
   }
 ];
 
@@ -302,6 +339,56 @@ export const production = {
     { line: "CNC-02", status: "Operando", oee: 84, scrap: 2.1 },
     { line: "CNC-03", status: "Parada", oee: 0, scrap: 0 },
     { line: "Solda-01", status: "Operando", oee: 89, scrap: 1.2 }
+  ],
+  liveCells: [
+    {
+      line: "CNC-01",
+      order: "OP-7811",
+      machine: "Centro CNC Mazak 01",
+      operator: "Equipe A",
+      status: "Operando",
+      targetHour: 620,
+      producedHour: 584,
+      cycle: 42,
+      temperature: 68,
+      quality: 98.2
+    },
+    {
+      line: "CNC-02",
+      order: "OP-7811",
+      machine: "Centro CNC Haas 02",
+      operator: "Equipe B",
+      status: "Operando",
+      targetHour: 590,
+      producedHour: 552,
+      cycle: 45,
+      temperature: 71,
+      quality: 97.6
+    },
+    {
+      line: "CNC-03",
+      order: "OP-7813",
+      machine: "Centro CNC Romi 03",
+      operator: "Manutenção",
+      status: "Parada",
+      targetHour: 520,
+      producedHour: 0,
+      cycle: 0,
+      temperature: 36,
+      quality: 0
+    },
+    {
+      line: "Solda-01",
+      order: "OP-7812",
+      machine: "Robô de solda Fanuc",
+      operator: "Equipe C",
+      status: "Operando",
+      targetHour: 210,
+      producedHour: 204,
+      cycle: 88,
+      temperature: 64,
+      quality: 99.1
+    }
   ]
 };
 
@@ -429,11 +516,95 @@ export const projects = {
   ]
 };
 
+export const admin = {
+  users: [
+    { id: "USR-1001", name: "Marina Lopes", email: "marina.lopes@nexaforge.local", role: "Gestor Produção", unit: "Unidade SP", status: "Ativo", mfa: "Ativo" },
+    { id: "USR-1002", name: "Bianca Costa", email: "bianca.costa@nexaforge.local", role: "Financeiro", unit: "Unidade SP", status: "Ativo", mfa: "Ativo" },
+    { id: "USR-1003", name: "Rafael Mendes", email: "rafael.mendes@nexaforge.local", role: "Manutenção", unit: "Unidade SP", status: "Ativo", mfa: "Pendente" },
+    { id: "USR-1004", name: "Service Desk", email: "servicedesk@nexaforge.local", role: "TI Admin", unit: "Corporativo", status: "Ativo", mfa: "Ativo" }
+  ],
+  roles: [
+    { name: "TI Admin", users: 4, permissions: 28, risk: "Baixo" },
+    { name: "Gestor Produção", users: 12, permissions: 18, risk: "Médio" },
+    { name: "Financeiro", users: 8, permissions: 16, risk: "Alto" },
+    { name: "Operador Chão de Fábrica", users: 96, permissions: 7, risk: "Baixo" }
+  ],
+  permissions: [
+    { module: "Produção", read: true, create: true, approve: true, admin: false },
+    { module: "Financeiro", read: true, create: true, approve: true, admin: false },
+    { module: "Automação/PLC", read: true, create: false, approve: true, admin: true },
+    { module: "Administração", read: true, create: true, approve: true, admin: true }
+  ],
+  sessions: [
+    { user: "Marina Lopes", device: "Edge / Windows", location: "Rede industrial", lastAccess: "03/05/2026 15:52", status: "Confiável" },
+    { user: "Service Desk", device: "Chrome / Notebook TI", location: "VPN corporativa", lastAccess: "03/05/2026 15:41", status: "Confiável" },
+    { user: "Rafael Mendes", device: "Tablet Android", location: "Chão de fábrica", lastAccess: "03/05/2026 14:58", status: "MFA pendente" }
+  ]
+};
+
+export const automation = {
+  plcs: [
+    { id: "PLC-CNC-01", name: "PLC Célula CNC 01", line: "CNC-01", protocol: "OPC UA", ip: "10.20.4.11", status: "Conectado", latency: 18, safety: "OK" },
+    { id: "PLC-CNC-02", name: "PLC Célula CNC 02", line: "CNC-02", protocol: "Modbus TCP", ip: "10.20.4.12", status: "Conectado", latency: 24, safety: "OK" },
+    { id: "PLC-CNC-03", name: "PLC Célula CNC 03", line: "CNC-03", protocol: "OPC UA", ip: "10.20.4.13", status: "Oscilando", latency: 126, safety: "Intertravado" },
+    { id: "PLC-SOLDA-01", name: "PLC Robô Solda 01", line: "Solda-01", protocol: "EtherNet/IP", ip: "10.20.5.21", status: "Conectado", latency: 14, safety: "OK" }
+  ],
+  autonomousMachines: [
+    { id: "AMR-07", type: "AMR logística", task: "Abastecer CNC-02", battery: 82, status: "Em rota", zone: "Corredor A" },
+    { id: "ROBOT-SOLDA-01", type: "Robô solda", task: "Cordão H90", battery: 100, status: "Produzindo", zone: "Solda" },
+    { id: "COBOT-03", type: "Cobot inspeção", task: "Medição flange", battery: 94, status: "Inspecionando", zone: "Qualidade" }
+  ],
+  tags: [
+    { tag: "CNC01.Speed", value: "1420 rpm", source: "PLC-CNC-01", status: "Normal" },
+    { tag: "CNC02.FeedRate", value: "88%", source: "PLC-CNC-02", status: "Normal" },
+    { tag: "CNC03.DoorLock", value: "Ativo", source: "PLC-CNC-03", status: "Intertravado" },
+    { tag: "SOLDA01.ArcCurrent", value: "186 A", source: "PLC-SOLDA-01", status: "Normal" }
+  ],
+  alarms: [
+    { id: "ALM-PLC-901", asset: "PLC-CNC-03", severity: "Alta", message: "Latência acima da tolerância", acknowledged: "Não" },
+    { id: "ALM-PLC-902", asset: "COBOT-03", severity: "Média", message: "Calibração vence em 2 dias", acknowledged: "Sim" }
+  ]
+};
+
+export const ai = {
+  requests: [
+    {
+      id: "IA-7001",
+      requester: "PCP",
+      scope: "Produção",
+      question: "Qual linha precisa de atenção agora?",
+      answer: "CNC-03 está parada e bloqueia a OP-7813. Priorize OS-4401 e valide PLC-CNC-03 antes do retorno.",
+      confidence: 94,
+      status: "Respondido"
+    },
+    {
+      id: "IA-7002",
+      requester: "Diretoria",
+      scope: "Financeiro",
+      question: "Existe risco financeiro na semana?",
+      answer: "Há duplicata atrasada de R$ 268,9 mil e pagamento PAG-3319 pendente de aprovação.",
+      confidence: 88,
+      status: "Respondido"
+    }
+  ],
+  playbooks: [
+    { name: "Priorizar produção", trigger: "Linha parada ou OEE abaixo de 65%", action: "Sugerir OS, impacto em OP e alerta para PCP", status: "Ativo" },
+    { name: "Risco de estoque", trigger: "Saldo abaixo do mínimo", action: "Gerar sugestão de compra e impacto em pedidos", status: "Ativo" },
+    { name: "Segurança de acesso", trigger: "MFA pendente ou acesso fora da rede", action: "Bloquear sessão e abrir chamado para TI", status: "Ativo" }
+  ],
+  insights: [
+    { area: "Produção", insight: "CNC-03 é o gargalo atual; retorno estimado após manutenção e validação PLC.", impact: "Alto" },
+    { area: "Estoque", insight: "MAT-1020 cobre apenas 1,8 dias de produção.", impact: "Alto" },
+    { area: "TI", insight: "Integração ERP-MRP crítica pode atrasar ordens automáticas.", impact: "Médio" }
+  ]
+};
+
 export const auditTrail = [
   { time: "15:18", user: "Marina Lopes", action: "Atualizou progresso da OP-7811 para 76%" },
   { time: "14:55", user: "Sistema MRP", action: "Gerou sugestão de compra para MAT-1020" },
   { time: "14:21", user: "Bianca Costa", action: "Aprovou pagamento PAG-3319" },
   { time: "13:49", user: "Rafael Mendes", action: "Abriu OS-4401 para CNC-03" },
   { time: "13:12", user: "Service Desk", action: "Priorizou chamado TI-9022 para integração ERP-MRP" },
-  { time: "12:44", user: "Qualidade", action: "Bloqueou NC-7782 para disposição técnica" }
+  { time: "12:44", user: "Qualidade", action: "Bloqueou NC-7782 para disposição técnica" },
+  { time: "12:08", user: "I.A Interna", action: "Sugeriu intervenção na CNC-03 por latência PLC e OEE zerado" }
 ];
