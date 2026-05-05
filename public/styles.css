@@ -592,6 +592,83 @@ h3 {
   font-size: 1.55rem;
 }
 
+.module-access {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(220px, 300px);
+  gap: 14px;
+  align-items: end;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
+}
+
+.module-access h2 {
+  margin: 2px 0 4px;
+  font-size: 1.25rem;
+}
+
+.module-access p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.module-select-label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.module-select-label select {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--text);
+  background: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  text-transform: none;
+}
+
+.quick-module-row {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.quick-module {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 900;
+  gap: 8px;
+}
+
+.quick-module svg {
+  width: 17px;
+  height: 17px;
+  color: var(--module-accent);
+}
+
+.quick-module.active {
+  border-color: color-mix(in srgb, var(--module-accent) 52%, var(--line));
+  background: color-mix(in srgb, var(--module-accent) 10%, #ffffff);
+  color: var(--module-accent);
+}
+
 .snapshot-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1523,6 +1600,10 @@ h3 {
   }
 
   .overview-band {
+    grid-template-columns: 1fr;
+  }
+
+  .module-access {
     grid-template-columns: 1fr;
   }
 

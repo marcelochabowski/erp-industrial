@@ -430,6 +430,13 @@ const applyTableFilter = () => {
   });
 };
 
+const focusModuleView = () => {
+  qs("#moduleView")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+};
+
 const createButton = (module, className = "nav-item") => {
   const button = document.createElement("button");
   const signal = moduleSignals[module.id];
@@ -1703,7 +1710,7 @@ const renderModule = async () => {
   applyTableFilter();
 };
 
-const selectModule = async (moduleId, syncUrl = true) => {
+const selectModule = async (moduleId, syncUrl = true, focusDetail = true) => {
   state.activeModule = moduleId;
   closeDrawer();
   if (syncUrl) {
@@ -1712,6 +1719,9 @@ const selectModule = async (moduleId, syncUrl = true) => {
     window.history.replaceState({}, "", url);
   }
   await renderModule();
+  if (focusDetail) {
+    focusModuleView();
+  }
 };
 
 const closeDrawer = () => {
@@ -1725,6 +1735,31 @@ const setupDrawer = () => {
     qs("#drawerBackdrop").hidden = false;
   });
   qs("#drawerBackdrop").addEventListener("click", closeDrawer);
+};
+
+const setupWorkspaceLinks = () => {
+  document.querySelectorAll("[data-workspace-action]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      document.querySelectorAll("[data-workspace-action]").forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+
+      const action = button.dataset.workspaceAction;
+
+      if (action === "overview") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      if (action === "operations") {
+        await selectModule("production");
+        return;
+      }
+
+      if (action === "admin") {
+        await selectModule("admin");
+      }
+    });
+  });
 };
 
 const setupDialog = () => {
@@ -1789,6 +1824,7 @@ const bootstrap = async () => {
   renderAlerts();
   renderActivity();
   setupDrawer();
+  setupWorkspaceLinks();
   setupDialog();
   setupSearch();
   await renderModule();

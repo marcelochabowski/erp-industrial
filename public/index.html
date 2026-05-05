@@ -9,7 +9,7 @@
       content="ERP industrial responsivo com módulos de logística, financeiro, RH, produção, estoque, manutenção, TI e gestão corporativa."
     />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="stylesheet" href="/styles.css?v=16" />
+    <link rel="stylesheet" href="/styles.css?v=17" />
     <title>NexaForge ERP Industrial</title>
   </head>
   <body>
@@ -73,15 +73,15 @@
         <aside class="sidebar" aria-label="Navegação principal">
           <div class="side-block">
             <p class="side-title">Espaços</p>
-            <button class="workspace-link active" type="button">
+            <button class="workspace-link active" type="button" data-workspace-action="overview">
               <span class="workspace-dot"></span>
               Visão geral
             </button>
-            <button class="workspace-link" type="button">
+            <button class="workspace-link" type="button" data-workspace-action="operations">
               <span class="workspace-dot muted"></span>
               Operações
             </button>
-            <button class="workspace-link" type="button">
+            <button class="workspace-link" type="button" data-workspace-action="admin">
               <span class="workspace-dot muted"></span>
               Administração
             </button>
@@ -121,6 +121,19 @@
               <h2>Priorize por exceção, entre no módulo certo e execute a ação sem sair do fluxo.</h2>
             </div>
             <div class="snapshot-grid" id="heroMetrics"></div>
+          </section>
+
+          <section class="module-access" aria-label="Seleção de módulo">
+            <div>
+              <p class="eyebrow">Seleção de módulo</p>
+              <h2 id="activeModuleTitle">Logística</h2>
+              <p id="activeModuleDescription">Escolha uma área para abrir a operação do ERP.</p>
+            </div>
+            <label class="module-select-label">
+              Módulo
+              <select id="moduleSelect"></select>
+            </label>
+            <div class="quick-module-row" id="quickModuleRow" aria-label="Atalhos de módulos"></div>
           </section>
 
           <section class="kpi-grid" id="kpiGrid" aria-label="Indicadores principais"></section>
@@ -199,6 +212,6 @@
       </form>
     </dialog>
 
-    <script src="/app.js?v=16" type="module"></script>
+    <script src="/app.js?v=17" type="module"></script>
   </body>
 </html>
