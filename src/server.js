@@ -42,6 +42,80 @@ const modulePayloads = {
   projects
 };
 
+const moduleOperations = {
+  logistics: {
+    collection: "shipments",
+    idPrefix: "EXP",
+    required: ["customer", "destination", "carrier", "volume"],
+    defaults: { status: "Programado", eta: "A confirmar", sla: 100 }
+  },
+  finance: {
+    collection: "receivables",
+    idPrefix: "REC",
+    required: ["customer", "due", "amount"],
+    defaults: { status: "No prazo" }
+  },
+  hr: {
+    collection: "employees",
+    idPrefix: "COL",
+    required: ["name", "role", "shift"],
+    defaults: { status: "Ativo" }
+  },
+  production: {
+    collection: "orders",
+    idPrefix: "OP",
+    required: ["item", "line", "planned"],
+    defaults: { produced: 0, status: "Planejamento", oee: 0 }
+  },
+  inventory: {
+    collection: "materials",
+    idKey: "sku",
+    idPrefix: "MAT",
+    required: ["name", "balance", "min", "location"],
+    defaults: { status: "Normal" }
+  },
+  maintenance: {
+    collection: "workOrders",
+    idPrefix: "OS",
+    required: ["asset", "priority"],
+    defaults: { status: "Aberta", mttr: "-", technician: "A definir" }
+  },
+  it: {
+    collection: "tickets",
+    idPrefix: "TI",
+    required: ["requester", "category", "priority"],
+    defaults: { status: "Aberto", sla: 100 }
+  },
+  purchasing: {
+    collection: "requisitions",
+    idPrefix: "REQ",
+    required: ["item", "requester", "amount"],
+    defaults: { status: "Cotação" }
+  },
+  sales: {
+    collection: "opportunities",
+    idPrefix: "OPV",
+    required: ["customer", "stage", "amount", "probability"]
+  },
+  quality: {
+    collection: "nonConformities",
+    idPrefix: "NC",
+    required: ["origin", "severity", "owner"],
+    defaults: { status: "Análise" }
+  },
+  fiscal: {
+    collection: "invoices",
+    idPrefix: "NF",
+    required: ["partner", "type", "amount"],
+    defaults: { status: "Aguardando SEFAZ" }
+  },
+  projects: {
+    collection: "portfolio",
+    idPrefix: "PRJ",
+    required: ["name", "phase", "budget", "progress"]
+  }
+};
+
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -108,12 +182,37 @@ const readJsonBody = async (req) =>
     req.on("error", reject);
   });
 
+const generateRecordId = (prefix) => `${prefix}-${Math.floor(10000 + Math.random() * 89999)}`;
+
+const getOperation = (moduleId, collection) => {
+  const operation = moduleOperations[moduleId];
+
+  if (!operation || operation.collection !== collection) {
+    return null;
+  }
+
+  return operation;
+};
+
+const validatePayload = (operation, payload) =>
+  operation.required.filter((field) => payload[field] === undefined || String(payload[field]).trim() === "");
+
+const createRecord = (operation, payload) => {
+  const idKey = operation.idKey || "id";
+
+  return {
+    [idKey]: payload[idKey] || generateRecordId(operation.idPrefix),
+    ...(operation.defaults || {}),
+    ...payload
+  };
+};
+
 const handleApi = async (req, res, pathname) => {
   if (req.method === "GET" && pathname === "/api/health") {
     sendJson(res, 200, {
       ok: true,
       service: "ERP Industrial API",
-      version: "1.0.0",
+      version: "1.1.0",
       timestamp: new Date().toISOString()
     });
     return true;
@@ -151,55 +250,65 @@ const handleApi = async (req, res, pathname) => {
     return true;
   }
 
-  if (req.method === "POST" && pathname === "/api/modules/logistics/shipments") {
-    const { customer, destination, carrier, volume } = await readJsonBody(req);
+  const collectionMatch = pathname.match(/^\/api\/modules\/([^/]+)\/([^/]+)(?:\/([^/]+))?$/);
+  if (req.method === "POST" && collectionMatch && !collectionMatch[3]) {
+    const [, moduleId, collection] = collectionMatch;
+    const operation = getOperation(moduleId, collection);
+    const moduleData = modulePayloads[moduleId];
 
-    if (!customer || !destination || !carrier || !volume) {
-      sendJson(res, 400, {
-        error: "VALIDATION_ERROR",
-        message: "Informe cliente, destino, transportadora e volume."
+    if (!operation || !moduleData?.[collection]) {
+      sendJson(res, 404, {
+        error: "COLLECTION_NOT_FOUND",
+        message: "Coleção do módulo não encontrada."
       });
       return true;
     }
 
-    const shipment = {
-      id: `EXP-${Math.floor(25000 + Math.random() * 8999)}`,
-      customer,
-      destination,
-      carrier,
-      volume,
-      status: "Programado",
-      eta: "A confirmar",
-      sla: 100
-    };
+    const payload = await readJsonBody(req);
+    const missingFields = validatePayload(operation, payload);
 
-    logistics.shipments.unshift(shipment);
-    sendJson(res, 201, shipment);
+    if (missingFields.length) {
+      sendJson(res, 400, {
+        error: "VALIDATION_ERROR",
+        message: `Informe os campos obrigatórios: ${missingFields.join(", ")}.`
+      });
+      return true;
+    }
+
+    const record = createRecord(operation, payload);
+    moduleData[collection].unshift(record);
+    sendJson(res, 201, record);
     return true;
   }
 
-  if (req.method === "POST" && pathname === "/api/modules/maintenance/work-orders") {
-    const { asset, priority, technician } = await readJsonBody(req);
+  if (req.method === "PATCH" && collectionMatch && collectionMatch[3]) {
+    const [, moduleId, collection, recordId] = collectionMatch;
+    const operation = getOperation(moduleId, collection);
+    const moduleData = modulePayloads[moduleId];
 
-    if (!asset || !priority) {
-      sendJson(res, 400, {
-        error: "VALIDATION_ERROR",
-        message: "Informe ativo e prioridade da ordem de serviço."
+    if (!operation || !moduleData?.[collection]) {
+      sendJson(res, 404, {
+        error: "COLLECTION_NOT_FOUND",
+        message: "Coleção do módulo não encontrada."
       });
       return true;
     }
 
-    const workOrder = {
-      id: `OS-${Math.floor(5000 + Math.random() * 3999)}`,
-      asset,
-      priority,
-      status: "Aberta",
-      mttr: "-",
-      technician: technician || "A definir"
-    };
+    const idKey = operation.idKey || "id";
+    const record = moduleData[collection].find((item) => String(item[idKey]) === decodeURIComponent(recordId));
 
-    maintenance.workOrders.unshift(workOrder);
-    sendJson(res, 201, workOrder);
+    if (!record) {
+      sendJson(res, 404, {
+        error: "RECORD_NOT_FOUND",
+        message: "Registro não encontrado."
+      });
+      return true;
+    }
+
+    const payload = await readJsonBody(req);
+    delete payload[idKey];
+    Object.assign(record, payload);
+    sendJson(res, 200, record);
     return true;
   }
 

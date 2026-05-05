@@ -20,6 +20,173 @@ const state = {
   filter: ""
 };
 
+const STORAGE_KEY = "nexaforge-erp-functional-data-v1";
+
+const moduleOperations = {
+  logistics: {
+    title: "Nova expedição",
+    submitLabel: "Criar expedição",
+    collection: "shipments",
+    idPrefix: "EXP",
+    statusFlow: ["Separação", "Conferência", "Aguardando NF", "Programado", "Em rota", "Entregue"],
+    defaults: { status: "Programado", eta: "A confirmar", sla: 100 },
+    fields: [
+      { name: "customer", label: "Cliente", placeholder: "Ex.: Atlas Máquinas" },
+      { name: "destination", label: "Destino", placeholder: "Cidade, UF" },
+      { name: "carrier", label: "Transportadora", placeholder: "Ex.: Frota própria" },
+      { name: "volume", label: "Volume", placeholder: "Ex.: 6 pallets" }
+    ]
+  },
+  finance: {
+    title: "Novo título a receber",
+    submitLabel: "Lançar título",
+    collection: "receivables",
+    idPrefix: "REC",
+    statusFlow: ["Atrasado", "Aprovar", "Programado", "No prazo", "Liquidado"],
+    defaults: { status: "No prazo" },
+    fields: [
+      { name: "customer", label: "Cliente", placeholder: "Ex.: Orion Parts" },
+      { name: "due", label: "Vencimento", placeholder: "dd/mm/aaaa" },
+      { name: "amount", label: "Valor", type: "number", placeholder: "125000" }
+    ]
+  },
+  hr: {
+    title: "Novo colaborador",
+    submitLabel: "Cadastrar pessoa",
+    collection: "employees",
+    idPrefix: "COL",
+    statusFlow: ["Férias", "Retorno programado", "Ativo"],
+    defaults: { status: "Ativo" },
+    fields: [
+      { name: "name", label: "Nome", placeholder: "Nome completo" },
+      { name: "role", label: "Cargo", placeholder: "Ex.: Analista de PCP" },
+      { name: "shift", label: "Turno", type: "select", options: ["A", "B", "C", "Comercial"] }
+    ]
+  },
+  production: {
+    title: "Nova ordem de produção",
+    submitLabel: "Abrir OP",
+    collection: "orders",
+    idPrefix: "OP",
+    statusFlow: ["Planejamento", "Setup", "Produção", "Qualidade", "Finalizada"],
+    defaults: { produced: 0, status: "Planejamento", oee: 0 },
+    fields: [
+      { name: "item", label: "Item", placeholder: "Ex.: Eixo usinado AX-90" },
+      { name: "line", label: "Linha", placeholder: "Ex.: Linha 04" },
+      { name: "planned", label: "Quantidade planejada", type: "number", placeholder: "1200" }
+    ]
+  },
+  inventory: {
+    title: "Novo material",
+    submitLabel: "Cadastrar material",
+    collection: "materials",
+    idKey: "sku",
+    idPrefix: "MAT",
+    statusFlow: ["Crítico", "Atenção", "Normal"],
+    defaults: { status: "Normal" },
+    fields: [
+      { name: "name", label: "Material", placeholder: "Ex.: Aço SAE 1020" },
+      { name: "balance", label: "Saldo", type: "number", placeholder: "4800" },
+      { name: "min", label: "Mínimo", type: "number", placeholder: "3000" },
+      { name: "location", label: "Local", placeholder: "Ex.: Rua A-04" }
+    ]
+  },
+  maintenance: {
+    title: "Nova ordem de serviço",
+    submitLabel: "Abrir OS",
+    collection: "workOrders",
+    idPrefix: "OS",
+    statusFlow: ["Aberta", "Triagem", "Execução", "Teste", "Encerrada"],
+    defaults: { status: "Aberta", mttr: "-" },
+    fields: [
+      { name: "asset", label: "Ativo", placeholder: "Ex.: Prensa P-12" },
+      { name: "priority", label: "Prioridade", type: "select", options: ["Alta", "Média", "Baixa"] },
+      { name: "technician", label: "Técnico", placeholder: "A definir" }
+    ]
+  },
+  it: {
+    title: "Novo chamado de TI",
+    submitLabel: "Abrir chamado",
+    collection: "tickets",
+    idPrefix: "TI",
+    statusFlow: ["Aberto", "Classificação", "Atendimento", "Validação", "Fechado"],
+    defaults: { status: "Aberto", sla: 100 },
+    fields: [
+      { name: "requester", label: "Solicitante", placeholder: "Nome ou área" },
+      { name: "category", label: "Categoria", placeholder: "Ex.: Sistema MES" },
+      { name: "priority", label: "Prioridade", type: "select", options: ["Crítica", "Alta", "Média", "Baixa"] }
+    ]
+  },
+  purchasing: {
+    title: "Nova requisição de compra",
+    submitLabel: "Criar requisição",
+    collection: "requisitions",
+    idPrefix: "REQ",
+    statusFlow: ["Requisição", "Cotação", "Aprovação", "Pedido", "Recebimento"],
+    defaults: { status: "Cotação" },
+    fields: [
+      { name: "item", label: "Item", placeholder: "Ex.: Rolamento industrial" },
+      { name: "requester", label: "Solicitante", placeholder: "Área ou pessoa" },
+      { name: "amount", label: "Valor estimado", type: "number", placeholder: "18500" }
+    ]
+  },
+  sales: {
+    title: "Nova oportunidade",
+    submitLabel: "Criar oportunidade",
+    collection: "opportunities",
+    idPrefix: "OPV",
+    progressField: "stage",
+    statusFlow: ["Lead", "Proposta", "Negociação", "Pedido", "Pós-venda"],
+    fields: [
+      { name: "customer", label: "Cliente", placeholder: "Ex.: Atlas Máquinas" },
+      { name: "stage", label: "Etapa", type: "select", options: ["Lead", "Proposta", "Negociação"] },
+      { name: "amount", label: "Valor", type: "number", placeholder: "240000" },
+      { name: "probability", label: "Probabilidade (%)", type: "number", placeholder: "45" }
+    ]
+  },
+  quality: {
+    title: "Nova não conformidade",
+    submitLabel: "Registrar NC",
+    collection: "nonConformities",
+    idPrefix: "NC",
+    statusFlow: ["Análise", "Ação corretiva", "Eficácia", "Encerrada"],
+    defaults: { status: "Análise" },
+    fields: [
+      { name: "origin", label: "Origem", placeholder: "Ex.: Inspeção final" },
+      { name: "severity", label: "Severidade", type: "select", options: ["Alta", "Média", "Baixa"] },
+      { name: "owner", label: "Responsável", placeholder: "Nome ou área" }
+    ]
+  },
+  fiscal: {
+    title: "Nova nota fiscal",
+    submitLabel: "Registrar NF",
+    collection: "invoices",
+    idPrefix: "NF",
+    statusFlow: ["Aguardando SEFAZ", "Autorizada", "Escriturada", "Apurada"],
+    defaults: { status: "Aguardando SEFAZ" },
+    fields: [
+      { name: "partner", label: "Parceiro", placeholder: "Cliente ou fornecedor" },
+      { name: "type", label: "Tipo", type: "select", options: ["NF-e saída", "NF-e entrada", "NFS-e"] },
+      { name: "amount", label: "Valor", type: "number", placeholder: "88000" }
+    ]
+  },
+  projects: {
+    title: "Novo projeto",
+    submitLabel: "Criar projeto",
+    collection: "portfolio",
+    idPrefix: "PRJ",
+    progressField: "phase",
+    statusFlow: ["Ideia", "Business case", "Execução", "Go-live", "Benefícios"],
+    defaults: { progress: 5 },
+    fields: [
+      { name: "name", label: "Nome", placeholder: "Ex.: Nova célula robotizada" },
+      { name: "phase", label: "Fase", type: "select", options: ["Ideia", "Business case", "Execução"] },
+      { name: "budget", label: "Orçamento", type: "number", placeholder: "450000" },
+      { name: "progress", label: "Progresso (%)", type: "number", placeholder: "10" }
+    ]
+  }
+};
+
 const moduleSignals = {
   logistics: { value: "94,6%", label: "SLA de entrega", risk: "1 NF pendente" },
   finance: { value: "R$ 1,84 mi", label: "Caixa 30 dias", risk: "1 título atrasado" },
@@ -59,6 +226,57 @@ const moneyFormatter = new Intl.NumberFormat("pt-BR", {
 const numberFormatter = new Intl.NumberFormat("pt-BR");
 const qs = (selector) => document.querySelector(selector);
 let demoDataPromise;
+let toastTimer;
+
+const escapeHtml = (value = "") =>
+  String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;"
+  })[char]);
+
+const cloneData = (value) => {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+
+  return JSON.parse(JSON.stringify(value));
+};
+
+const readStoredModules = () => {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch {
+    return {};
+  }
+};
+
+const persistModuleData = (moduleId, data) => {
+  try {
+    const storedModules = readStoredModules();
+    storedModules[moduleId] = cloneData(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storedModules));
+  } catch (error) {
+    console.warn("Não foi possível salvar os dados locais.", error);
+  }
+};
+
+const moduleIdFromEndpoint = (endpoint) => endpoint.match(/^\/api\/modules\/([^/]+)$/)?.[1];
+
+const applyStoredModule = (endpoint, payload) => {
+  const moduleId = moduleIdFromEndpoint(endpoint);
+
+  if (!moduleId) {
+    return payload;
+  }
+
+  const storedModule = readStoredModules()[moduleId];
+  return storedModule || cloneData(payload);
+};
+
+const getOperationConfig = (moduleId = state.activeModule) => moduleOperations[moduleId] || moduleOperations.logistics;
 
 const getModule = (moduleId = state.activeModule) =>
   state.summary.modules.find((module) => module.id === moduleId);
@@ -90,22 +308,22 @@ const demoPayload = async (endpoint) => {
   };
 
   if (endpoint === "/api/summary") {
-    return {
+    return cloneData({
       company: data.company,
       modules: data.modules,
       kpis: data.kpis,
       alerts: data.alerts,
       auditTrail: data.auditTrail
-    };
+    });
   }
 
   if (endpoint === "/api/modules") {
-    return data.modules;
+    return cloneData(data.modules);
   }
 
   const moduleMatch = endpoint.match(/^\/api\/modules\/([^/]+)$/);
   if (moduleMatch) {
-    return modulePayloads[moduleMatch[1]];
+    return cloneData(modulePayloads[moduleMatch[1]]);
   }
 
   throw new Error(`Sem fallback para ${endpoint}`);
@@ -119,10 +337,10 @@ const apiGet = async (endpoint) => {
       throw new Error(`HTTP ${response.status}`);
     }
 
-    return await response.json();
+    return applyStoredModule(endpoint, await response.json());
   } catch (error) {
     console.info("Usando dados locais de demonstração.", error.message);
-    return demoPayload(endpoint);
+    return applyStoredModule(endpoint, await demoPayload(endpoint));
   }
 };
 
@@ -365,11 +583,11 @@ const renderActivity = () => {
     .join("");
 };
 
-const table = (title, columns, rows) => `
+const table = (title, columns, rows = []) => `
   <article class="table-card ${rows.length > 3 ? "full" : ""}">
     <div class="card-toolbar">
-      <h3>${title}</h3>
-      <button class="ghost-action" type="button">
+      <h3>${escapeHtml(title)}</h3>
+      <button class="ghost-action" type="button" data-table-action="analyze">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M3 3v18h18"></path>
           <path d="m19 9-5 5-4-4-3 3"></path>
@@ -380,7 +598,7 @@ const table = (title, columns, rows) => `
     <div class="data-table-wrap">
       <table class="data-table">
         <thead>
-          <tr>${columns.map((column) => `<th>${column.label}</th>`).join("")}</tr>
+          <tr>${columns.map((column) => `<th>${escapeHtml(column.label)}</th>`).join("")}</tr>
         </thead>
         <tbody>
           ${rows
@@ -389,8 +607,8 @@ const table = (title, columns, rows) => `
                 <tr>
                   ${columns
                     .map((column) => {
-                      const rawValue = column.render ? column.render(row) : row[column.key];
-                      return `<td data-label="${column.label}">${rawValue}</td>`;
+                      const rawValue = column.render ? column.render(row) : escapeHtml(row[column.key] ?? "");
+                      return `<td data-label="${escapeHtml(column.label)}">${rawValue}</td>`;
                     })
                     .join("")}
                 </tr>
@@ -406,7 +624,7 @@ const table = (title, columns, rows) => `
 const progressCard = (title, rows, labelKey, valueKey, suffix = "%") => `
   <article class="mini-card">
     <div class="card-toolbar">
-      <h3>${title}</h3>
+      <h3>${escapeHtml(title)}</h3>
       <span class="mini-chip">Tempo real</span>
     </div>
     <div class="progress-row">
@@ -415,8 +633,8 @@ const progressCard = (title, rows, labelKey, valueKey, suffix = "%") => `
           (row) => `
             <div class="progress-item">
               <div class="progress-label">
-                <span>${row[labelKey]}</span>
-                <strong>${row[valueKey]}${suffix}</strong>
+                <span>${escapeHtml(row[labelKey] ?? "")}</span>
+                <strong>${escapeHtml(row[valueKey] ?? "")}${escapeHtml(suffix)}</strong>
               </div>
               <div class="progress-track">
                 <div class="progress-fill" style="--progress: ${Math.min(Number(row[valueKey]) || 0, 100)}%"></div>
@@ -763,6 +981,244 @@ const moduleRenderers = {
   projects: renderProjects
 };
 
+const showToast = (message) => {
+  let toast = qs("#toast");
+
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "toast";
+    toast.className = "toast";
+    toast.setAttribute("role", "status");
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2600);
+};
+
+const addAudit = (action) => {
+  if (!state.summary?.auditTrail) {
+    return;
+  }
+
+  state.summary.auditTrail = [
+    {
+      time: "Agora",
+      user: "Operador ERP",
+      action
+    },
+    ...state.summary.auditTrail
+  ].slice(0, 8);
+  renderActivity();
+};
+
+const operationEndpoint = (moduleId = state.activeModule, config = getOperationConfig(moduleId)) =>
+  `/api/modules/${moduleId}/${config.collection}`;
+
+const generateRecordId = (prefix) => `${prefix}-${Math.floor(10000 + Math.random() * 89999)}`;
+
+const renderOperationField = (field) => {
+  const required = field.required === false ? "" : " required";
+  const placeholder = field.placeholder ? ` placeholder="${escapeHtml(field.placeholder)}"` : "";
+
+  if (field.type === "select") {
+    return `
+      <label>
+        ${escapeHtml(field.label)}
+        <select name="${escapeHtml(field.name)}"${required}>
+          ${(field.options || [])
+            .map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`)
+            .join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  const inputType = field.type === "number" ? "number" : field.type || "text";
+  const numericAttrs = field.type === "number" ? ' inputmode="decimal" step="0.01"' : "";
+
+  return `
+    <label>
+      ${escapeHtml(field.label)}
+      <input name="${escapeHtml(field.name)}" type="${inputType}"${numericAttrs}${placeholder}${required} />
+    </label>
+  `;
+};
+
+const renderOperationForm = () => {
+  const config = getOperationConfig();
+  const module = getModule();
+  const title = qs("#operationTitle");
+  const eyebrow = qs("#operationEyebrow");
+  const fields = qs("#dynamicFormFields");
+  const submit = qs("#operationSubmit");
+
+  eyebrow.textContent = "Registro rápido";
+  title.textContent = config.title;
+  fields.innerHTML = config.fields.map(renderOperationField).join("");
+  submit.textContent = config.submitLabel;
+  submit.style.setProperty("--module-accent", module.accent);
+};
+
+const normalizeFormValue = (field, value) => {
+  const trimmed = typeof value === "string" ? value.trim() : value;
+
+  if (field.type === "number") {
+    return Number(trimmed || 0);
+  }
+
+  return trimmed;
+};
+
+const operationPayloadFromForm = (form, config) => {
+  const formData = new FormData(form);
+
+  return config.fields.reduce((payload, field) => {
+    payload[field.name] = normalizeFormValue(field, formData.get(field.name));
+    return payload;
+  }, {});
+};
+
+const createRecord = (config, payload, serverRecord = null) => {
+  const idKey = config.idKey || "id";
+
+  return {
+    [idKey]: serverRecord?.[idKey] || payload[idKey] || generateRecordId(config.idPrefix),
+    ...(config.defaults || {}),
+    ...payload,
+    ...(serverRecord || {})
+  };
+};
+
+const getActiveCollection = () => {
+  const config = getOperationConfig();
+  const data = state.moduleData[state.activeModule];
+
+  return {
+    config,
+    data,
+    rows: data?.[config.collection] || []
+  };
+};
+
+const csvCell = (value) => {
+  const text = String(value ?? "");
+  return /[;"\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+const exportActiveCollection = () => {
+  const { config, rows } = getActiveCollection();
+  const module = getModule();
+
+  if (!rows.length) {
+    showToast("Não há registros para exportar.");
+    return;
+  }
+
+  const columns = [...rows.reduce((keys, row) => {
+    Object.keys(row).forEach((key) => keys.add(key));
+    return keys;
+  }, new Set())];
+  const csv = [
+    columns.map(csvCell).join(";"),
+    ...rows.map((row) => columns.map((column) => csvCell(row[column])).join(";"))
+  ].join("\r\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = `erp-${state.activeModule}-${config.collection}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  addAudit(`${module.name}: exportação CSV gerada.`);
+  showToast("Exportação CSV gerada.");
+};
+
+const nextFlowValue = (flow, currentValue) => {
+  const normalized = String(currentValue || "").toLowerCase();
+  const index = flow.findIndex((item) => item.toLowerCase() === normalized);
+
+  if (index === -1) {
+    return flow[0] || "Atualizado";
+  }
+
+  return flow[Math.min(index + 1, flow.length - 1)];
+};
+
+const advanceActiveRecord = async () => {
+  const { config, data, rows } = getActiveCollection();
+  const module = getModule();
+
+  if (!rows.length) {
+    showToast("Não há registros para atualizar.");
+    return;
+  }
+
+  const record = rows[0];
+  const idKey = config.idKey || "id";
+  const progressField =
+    config.progressField ||
+    ["status", "stage", "phase", "result"].find((field) => Object.prototype.hasOwnProperty.call(record, field)) ||
+    (Object.prototype.hasOwnProperty.call(record, "progress") ? "progress" : null);
+
+  if (!progressField) {
+    showToast("Este módulo não possui status para avançar.");
+    return;
+  }
+
+  const patch = {};
+
+  if (typeof record[progressField] === "number" || progressField === "progress") {
+    record[progressField] = Math.min(100, Number(record[progressField] || 0) + 15);
+  } else {
+    record[progressField] = nextFlowValue(config.statusFlow || processFlows[state.activeModule], record[progressField]);
+  }
+
+  patch[progressField] = record[progressField];
+
+  if (progressField === "stage" && Object.prototype.hasOwnProperty.call(record, "probability")) {
+    record.probability = Math.min(100, Number(record.probability || 0) + 15);
+    patch.probability = record.probability;
+  }
+
+  if (progressField === "phase" && Object.prototype.hasOwnProperty.call(record, "progress")) {
+    record.progress = Math.min(100, Number(record.progress || 0) + 20);
+    patch.progress = record.progress;
+  }
+
+  state.moduleData[state.activeModule] = data;
+  persistModuleData(state.activeModule, data);
+
+  try {
+    await fetch(`${operationEndpoint()}/${encodeURIComponent(record[idKey])}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch)
+    });
+  } catch (error) {
+    console.info("Atualização mantida localmente.", error.message);
+  }
+
+  addAudit(`${module.name}: ${record[idKey]} atualizado para ${record[progressField]}.`);
+  showToast("Status atualizado.");
+  await renderModule();
+};
+
+const setupModuleActions = () => {
+  qs("#moduleView")?.querySelector("[data-action='export']")?.addEventListener("click", exportActiveCollection);
+  qs("#moduleView")?.querySelector("[data-action='advance']")?.addEventListener("click", advanceActiveRecord);
+  qs("#moduleView")
+    ?.querySelectorAll("[data-table-action='analyze']")
+    .forEach((button) => {
+      button.addEventListener("click", () => showToast("Análise atualizada com os dados filtrados."));
+    });
+};
+
 const renderModule = async () => {
   setModuleAccent();
   renderNavigation();
@@ -790,7 +1246,7 @@ const renderModule = async () => {
         </div>
       </div>
       <div class="object-actions">
-        <button class="secondary-action" type="button">
+        <button class="secondary-action" type="button" data-action="export">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <path d="M7 10l5 5 5-5"></path>
@@ -798,12 +1254,12 @@ const renderModule = async () => {
           </svg>
           Exportar
         </button>
-        <button class="primary-action" type="button">
+        <button class="primary-action" type="button" data-action="advance">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M5 12h14"></path>
             <path d="m12 5 7 7-7 7"></path>
           </svg>
-          Executar
+          Avançar status
         </button>
       </div>
       <div class="object-facts">
@@ -823,6 +1279,7 @@ const renderModule = async () => {
     ${renderer ? renderer(data) : `<div class="empty-state">Módulo em construção.</div>`}
   `;
 
+  setupModuleActions();
   applyTableFilter();
 };
 
@@ -855,6 +1312,8 @@ const setupDialog = () => {
   const form = qs("#operationForm");
 
   qs("#newActionButton").addEventListener("click", () => {
+    form.reset();
+    renderOperationForm();
     dialog.showModal();
   });
 
@@ -867,10 +1326,14 @@ const setupDialog = () => {
       return;
     }
 
-    const payload = Object.fromEntries(new FormData(form).entries());
+    const moduleId = state.activeModule;
+    const module = getModule(moduleId);
+    const config = getOperationConfig(moduleId);
+    const payload = operationPayloadFromForm(form, config);
+    let serverRecord = null;
 
     try {
-      const response = await fetch("/api/modules/logistics/shipments", {
+      const response = await fetch(operationEndpoint(moduleId, config), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -880,20 +1343,18 @@ const setupDialog = () => {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      state.moduleData.logistics = await apiGet("/api/modules/logistics");
-    } catch {
-      const logisticsData = state.moduleData.logistics || (await demoPayload("/api/modules/logistics"));
-      logisticsData.shipments.unshift({
-        id: `EXP-${Math.floor(25000 + Math.random() * 8999)}`,
-        ...payload,
-        status: "Programado",
-        eta: "A confirmar",
-        sla: 100
-      });
-      state.moduleData.logistics = logisticsData;
+      serverRecord = await response.json();
+    } catch (error) {
+      console.info("Registro salvo no modo local.", error.message);
     }
 
-    state.activeModule = "logistics";
+    const moduleData = state.moduleData[moduleId] || (await apiGet(`/api/modules/${moduleId}`));
+    const record = createRecord(config, payload, serverRecord);
+    moduleData[config.collection] = [record, ...(moduleData[config.collection] || [])];
+    state.moduleData[moduleId] = moduleData;
+    persistModuleData(moduleId, moduleData);
+    addAudit(`${module.name}: ${config.submitLabel.toLowerCase()} ${record[config.idKey || "id"]}.`);
+    showToast("Registro salvo.");
     form.reset();
     dialog.close();
     await renderModule();

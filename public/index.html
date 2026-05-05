@@ -9,7 +9,7 @@
       content="ERP industrial responsivo com módulos de logística, financeiro, RH, produção, estoque, manutenção, TI e gestão corporativa."
     />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="stylesheet" href="/styles.css?v=14" />
+    <link rel="stylesheet" href="/styles.css?v=15" />
     <title>NexaForge ERP Industrial</title>
   </head>
   <body>
@@ -186,34 +186,19 @@
       <form method="dialog" id="operationForm">
         <div class="dialog-header">
           <div>
-            <p class="eyebrow">Registro rápido</p>
-            <h2>Nova operação logística</h2>
+            <p class="eyebrow" id="operationEyebrow">Registro rápido</p>
+            <h2 id="operationTitle">Novo registro</h2>
           </div>
           <button class="icon-close" value="cancel" aria-label="Fechar">×</button>
         </div>
-        <label>
-          Cliente
-          <input name="customer" required placeholder="Ex.: Atlas Máquinas" />
-        </label>
-        <label>
-          Destino
-          <input name="destination" required placeholder="Cidade, UF" />
-        </label>
-        <label>
-          Transportadora
-          <input name="carrier" required placeholder="Ex.: Frota própria" />
-        </label>
-        <label>
-          Volume
-          <input name="volume" required placeholder="Ex.: 6 pallets" />
-        </label>
+        <div class="dynamic-fields" id="dynamicFormFields"></div>
         <div class="dialog-actions">
           <button value="cancel" class="secondary-action">Cancelar</button>
-          <button value="default" class="primary-action">Salvar</button>
+          <button value="default" class="primary-action" id="operationSubmit">Salvar</button>
         </div>
       </form>
     </dialog>
 
-    <script src="/app.js?v=14" type="module"></script>
+    <script src="/app.js?v=15" type="module"></script>
   </body>
 </html>
