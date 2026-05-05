@@ -478,6 +478,11 @@ const renderNavigation = () => {
 
 const renderTabs = () => {
   const tabs = qs("#moduleTabs");
+
+  if (!tabs) {
+    return;
+  }
+
   tabs.innerHTML = "";
 
   state.summary.modules.forEach((module) => {
@@ -580,6 +585,10 @@ const renderKpis = () => {
 
 const renderModuleTiles = () => {
   const tiles = qs("#moduleTiles");
+
+  if (!tiles) {
+    return;
+  }
 
   tiles.innerHTML = state.summary.modules
     .map((module) => {

@@ -9,7 +9,7 @@
       content="ERP industrial responsivo com módulos de logística, financeiro, RH, produção, estoque, manutenção, TI e gestão corporativa."
     />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="stylesheet" href="/styles.css?v=17" />
+    <link rel="stylesheet" href="/styles.css?v=19" />
     <title>NexaForge ERP Industrial</title>
   </head>
   <body>
@@ -104,9 +104,9 @@
         <main class="workspace">
           <section class="page-header">
             <div>
-              <p class="breadcrumb">Início / Produção industrial / Cockpit</p>
-              <h1>Cockpit industrial</h1>
-              <p class="page-subtitle">Operação, finanças e pessoas em uma experiência role-based para desktop e mobile.</p>
+              <p class="breadcrumb">ERP Industrial / Operação</p>
+              <h1>NexaForge ERP</h1>
+              <p class="page-subtitle">Ambiente operacional para produção, finanças, pessoas, automação PLC e I.A interna.</p>
             </div>
             <div class="page-actions">
               <span class="object-status positive">Turno B ativo</span>
@@ -115,17 +115,9 @@
             </div>
           </section>
 
-          <section class="overview-band">
-            <div class="overview-copy">
-              <p class="eyebrow">Launchpad executivo</p>
-              <h2>Priorize por exceção, entre no módulo certo e execute a ação sem sair do fluxo.</h2>
-            </div>
-            <div class="snapshot-grid" id="heroMetrics"></div>
-          </section>
-
           <section class="module-access" aria-label="Seleção de módulo">
             <div>
-              <p class="eyebrow">Seleção de módulo</p>
+              <p class="eyebrow">Módulo ativo</p>
               <h2 id="activeModuleTitle">Logística</h2>
               <p id="activeModuleDescription">Escolha uma área para abrir a operação do ERP.</p>
             </div>
@@ -136,30 +128,27 @@
             <div class="quick-module-row" id="quickModuleRow" aria-label="Atalhos de módulos"></div>
           </section>
 
-          <section class="kpi-grid" id="kpiGrid" aria-label="Indicadores principais"></section>
-
           <section class="content-grid">
             <div class="main-panel">
-              <div class="section-heading">
-                <div>
-                  <p class="eyebrow">Launchpad</p>
-                  <h2>Aplicativos por área</h2>
-                </div>
-              </div>
-              <section class="module-tiles" id="moduleTiles" aria-label="Aplicativos do ERP"></section>
-
               <div class="section-heading module-heading object-heading">
                 <div>
-                  <p class="eyebrow">Object page</p>
-                  <h2>Detalhe operacional</h2>
+                  <p class="eyebrow">Operação ativa</p>
+                  <h2>Processos, registros e indicadores do módulo</h2>
                 </div>
-                <div class="segmented" id="moduleTabs" role="tablist" aria-label="Módulos ERP"></div>
               </div>
 
               <div id="moduleView" class="module-view"></div>
             </div>
 
             <aside class="insights-panel">
+              <div class="section-heading compact">
+                <div>
+                  <p class="eyebrow">Indicadores</p>
+                  <h2>Resumo executivo</h2>
+                </div>
+              </div>
+              <section class="side-kpi-grid" id="kpiGrid" aria-label="Indicadores principais"></section>
+
               <div class="section-heading compact">
                 <div>
                   <p class="eyebrow">Worklist</p>
@@ -212,6 +201,6 @@
       </form>
     </dialog>
 
-    <script src="/app.js?v=17" type="module"></script>
+    <script src="/app.js?v=19" type="module"></script>
   </body>
 </html>
