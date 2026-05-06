@@ -473,16 +473,25 @@ const renderNavigation = () => {
     node.innerHTML = "";
   });
 
-  state.summary.modules.forEach((module, index) => {
+  const mobileBaseIds = ["production", "logistics", "finance", "inventory", "automation"];
+  const mobileModules = mobileBaseIds
+    .map((id) => state.summary.modules.find((module) => module.id === id))
+    .filter(Boolean);
+
+  if (state.isModulePage && !mobileModules.some((module) => module.id === state.activeModule)) {
+    mobileModules[mobileModules.length - 1] = getModule();
+  }
+
+  state.summary.modules.forEach((module) => {
     desktopNav.appendChild(createButton(module));
     drawerNav.appendChild(createButton(module));
+  });
 
-    if (index < 5) {
-      const mobileButton = createButton(module, "mobile-nav-item");
-      mobileButton.title = module.name;
-      mobileButton.innerHTML = `${icons[module.icon] || ""}<span>${module.name}</span>`;
-      mobileNav.appendChild(mobileButton);
-    }
+  mobileModules.forEach((module) => {
+    const mobileButton = createButton(module, "mobile-nav-item");
+    mobileButton.title = module.name;
+    mobileButton.innerHTML = `${icons[module.icon] || ""}<span>${module.name}</span>`;
+    mobileNav.appendChild(mobileButton);
   });
 };
 
@@ -609,18 +618,25 @@ const renderModuleTiles = () => {
   const dashboardModules = state.summary.modules.filter((module) => dashboardModuleIds.includes(module.id));
 
   tiles.innerHTML = dashboardModules
-    .map((module) => {
+    .map((module, index) => {
       const signal = moduleSignals[module.id];
+      const appCode = `ERP-${String(index + 1).padStart(2, "0")}`;
       return `
         <button class="module-tile" type="button" data-module="${module.id}" style="--module-accent: ${module.accent}">
           <span class="tile-icon">${icons[module.icon] || ""}</span>
           <span class="tile-body">
-            <strong>${module.name}</strong>
+            <span class="tile-title-row">
+              <strong>${module.name}</strong>
+              <span class="tile-code">${appCode}</span>
+            </span>
             <small>${module.description}</small>
           </span>
           <span class="tile-metric">
-            <b>${signal.value}</b>
-            <small>${signal.risk}</small>
+            <span>
+              <b>${signal.value}</b>
+              <small>${signal.label}</small>
+            </span>
+            <span class="tile-risk">${signal.risk}</span>
           </span>
         </button>
       `;
@@ -1700,15 +1716,23 @@ const renderModule = async () => {
   const renderer = moduleRenderers[state.activeModule];
   const data = state.moduleData[state.activeModule];
   const facts = renderFacts(data);
+  const updatedAt = new Intl.DateTimeFormat("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date());
 
   qs("#moduleView").innerHTML = `
     <section class="object-page-header">
       <div class="object-main">
         <div class="module-icon">${icons[module.icon] || ""}</div>
         <div>
-          <p class="eyebrow">${module.name}</p>
+          <p class="eyebrow">Centro operacional / ${module.name}</p>
           <h2>${module.description}</h2>
-          <p>${moduleSignals[module.id].risk} · Atualizado às 15:55 · ${moduleSignals[module.id].label}</p>
+          <p class="object-meta-line">
+            <span>${moduleSignals[module.id].risk}</span>
+            <span>Atualizado às ${updatedAt}</span>
+            <span>${moduleSignals[module.id].label}</span>
+          </p>
         </div>
       </div>
       <div class="object-actions">
