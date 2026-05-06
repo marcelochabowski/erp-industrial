@@ -701,43 +701,64 @@ const renderActivity = () => {
     .join("");
 };
 
-const table = (title, columns, rows = []) => `
-  <article class="table-card ${rows.length > 3 ? "full" : ""}">
-    <div class="card-toolbar">
-      <h3>${escapeHtml(title)}</h3>
-      <button class="ghost-action" type="button" data-table-action="analyze">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M3 3v18h18"></path>
-          <path d="m19 9-5 5-4-4-3 3"></path>
-        </svg>
-        Analisar
-      </button>
-    </div>
-    <div class="data-table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>${columns.map((column) => `<th>${escapeHtml(column.label)}</th>`).join("")}</tr>
-        </thead>
-        <tbody>
-          ${rows
-            .map(
-              (row) => `
-                <tr>
-                  ${columns
-                    .map((column) => {
-                      const rawValue = column.render ? column.render(row) : escapeHtml(row[column.key] ?? "");
-                      return `<td data-label="${escapeHtml(column.label)}">${rawValue}</td>`;
-                    })
-                    .join("")}
-                </tr>
-              `
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </div>
-  </article>
-`;
+const table = (title, columns, rows = []) => {
+  const actionable = isPrimaryCollectionRows(rows);
+  const { config } = getActiveCollection();
+  const idKey = config.idKey || "id";
+  const tableColumns = actionable
+    ? [
+        ...columns,
+        {
+          label: "Ações",
+          render: (row) => `
+            <div class="row-actions">
+              <button class="row-action" type="button" data-record-action="edit" data-record-id="${escapeHtml(row[idKey])}">Editar</button>
+              <button class="row-action primary" type="button" data-record-action="advance" data-record-id="${escapeHtml(row[idKey])}">Avançar</button>
+            </div>
+          `
+        }
+      ]
+    : columns;
+
+  return `
+    <article class="table-card ${rows.length > 3 ? "full" : ""}">
+      <div class="card-toolbar">
+        <h3>${escapeHtml(title)}</h3>
+        <button class="ghost-action" type="button" data-table-action="analyze">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 3v18h18"></path>
+            <path d="m19 9-5 5-4-4-3 3"></path>
+          </svg>
+          Analisar
+        </button>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>${tableColumns.map((column) => `<th>${escapeHtml(column.label)}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${rows
+              .map(
+                (row) => `
+                  <tr${actionable ? ` data-record-id="${escapeHtml(row[idKey])}"` : ""}>
+                    ${tableColumns
+                      .map((column) => {
+                        const rawValue = column.render ? column.render(row) : escapeHtml(row[column.key] ?? "");
+                        const cellClass = column.label === "Ações" ? ' class="action-cell"' : "";
+                        return `<td${cellClass} data-label="${escapeHtml(column.label)}">${rawValue}</td>`;
+                      })
+                      .join("")}
+                  </tr>
+                `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  `;
+};
 
 const progressCard = (title, rows, labelKey, valueKey, suffix = "%") => `
   <article class="mini-card">
@@ -1354,17 +1375,19 @@ const operationEndpoint = (moduleId = state.activeModule, config = getOperationC
 
 const generateRecordId = (prefix) => `${prefix}-${Math.floor(10000 + Math.random() * 89999)}`;
 
-const renderOperationField = (field) => {
+const renderOperationField = (field, value = "") => {
   const required = field.required === false ? "" : " required";
   const placeholder = field.placeholder ? ` placeholder="${escapeHtml(field.placeholder)}"` : "";
 
   if (field.type === "select") {
+    const options = field.options?.includes(value) ? field.options : [value, ...(field.options || [])].filter(Boolean);
+
     return `
       <label>
         ${escapeHtml(field.label)}
         <select name="${escapeHtml(field.name)}"${required}>
-          ${(field.options || [])
-            .map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`)
+          ${options
+            .map((option) => `<option value="${escapeHtml(option)}"${option === value ? " selected" : ""}>${escapeHtml(option)}</option>`)
             .join("")}
         </select>
       </label>
@@ -1377,7 +1400,7 @@ const renderOperationField = (field) => {
   return `
     <label>
       ${escapeHtml(field.label)}
-      <input name="${escapeHtml(field.name)}" type="${inputType}"${numericAttrs}${placeholder}${required} />
+      <input name="${escapeHtml(field.name)}" type="${inputType}" value="${escapeHtml(value)}"${numericAttrs}${placeholder}${required} />
     </label>
   `;
 };
@@ -1468,6 +1491,29 @@ const getActiveCollection = () => {
   };
 };
 
+const isPrimaryCollectionRows = (rows = []) => {
+  const { config, data } = getActiveCollection();
+  return Boolean(data?.[config.collection] && data[config.collection] === rows);
+};
+
+const getRecordProgressField = (record, config = getOperationConfig()) =>
+  config.progressField ||
+  ["status", "stage", "phase", "result"].find((field) => Object.prototype.hasOwnProperty.call(record, field)) ||
+  (Object.prototype.hasOwnProperty.call(record, "progress") ? "progress" : null);
+
+const findActiveRecord = (recordId) => {
+  const { config, rows } = getActiveCollection();
+  const idKey = config.idKey || "id";
+  const record = recordId ? rows.find((item) => String(item[idKey]) === String(recordId)) : rows[0];
+
+  return {
+    config,
+    idKey,
+    record,
+    rows
+  };
+};
+
 const csvCell = (value) => {
   const text = String(value ?? "");
   return /[;"\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
@@ -1515,21 +1561,55 @@ const nextFlowValue = (flow, currentValue) => {
   return flow[Math.min(index + 1, flow.length - 1)];
 };
 
-const advanceActiveRecord = async () => {
+const patchActiveRecord = async (recordId, patch, successMessage = "Registro atualizado.") => {
   const { config, data, rows } = getActiveCollection();
   const module = getModule();
+  const idKey = config.idKey || "id";
+  const record = rows.find((item) => String(item[idKey]) === String(recordId));
+
+  if (!record) {
+    showToast("Registro não encontrado.");
+    return;
+  }
+
+  Object.assign(record, patch);
+  state.moduleData[state.activeModule] = data;
+  persistModuleData(state.activeModule, data);
+
+  try {
+    const response = await fetch(`${operationEndpoint()}/${encodeURIComponent(record[idKey])}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch)
+    });
+
+    if (response.ok) {
+      Object.assign(record, await response.json());
+      persistModuleData(state.activeModule, data);
+    }
+  } catch (error) {
+    console.info("Atualização mantida localmente.", error.message);
+  }
+
+  addAudit(`${module.name}: ${record[idKey]} atualizado.`);
+  showToast(successMessage);
+  await renderModule();
+};
+
+const advanceActiveRecord = async (recordId = null) => {
+  const { config, idKey, record, rows } = findActiveRecord(recordId);
 
   if (!rows.length) {
     showToast("Não há registros para atualizar.");
     return;
   }
 
-  const record = rows[0];
-  const idKey = config.idKey || "id";
-  const progressField =
-    config.progressField ||
-    ["status", "stage", "phase", "result"].find((field) => Object.prototype.hasOwnProperty.call(record, field)) ||
-    (Object.prototype.hasOwnProperty.call(record, "progress") ? "progress" : null);
+  if (!record) {
+    showToast("Registro não encontrado.");
+    return;
+  }
+
+  const progressField = getRecordProgressField(record, config);
 
   if (!progressField) {
     showToast("Este módulo não possui status para avançar.");
@@ -1539,39 +1619,20 @@ const advanceActiveRecord = async () => {
   const patch = {};
 
   if (typeof record[progressField] === "number" || progressField === "progress") {
-    record[progressField] = Math.min(100, Number(record[progressField] || 0) + 15);
+    patch[progressField] = Math.min(100, Number(record[progressField] || 0) + 15);
   } else {
-    record[progressField] = nextFlowValue(config.statusFlow || processFlows[state.activeModule], record[progressField]);
+    patch[progressField] = nextFlowValue(config.statusFlow || processFlows[state.activeModule], record[progressField]);
   }
 
-  patch[progressField] = record[progressField];
-
   if (progressField === "stage" && Object.prototype.hasOwnProperty.call(record, "probability")) {
-    record.probability = Math.min(100, Number(record.probability || 0) + 15);
-    patch.probability = record.probability;
+    patch.probability = Math.min(100, Number(record.probability || 0) + 15);
   }
 
   if (progressField === "phase" && Object.prototype.hasOwnProperty.call(record, "progress")) {
-    record.progress = Math.min(100, Number(record.progress || 0) + 20);
-    patch.progress = record.progress;
+    patch.progress = Math.min(100, Number(record.progress || 0) + 20);
   }
 
-  state.moduleData[state.activeModule] = data;
-  persistModuleData(state.activeModule, data);
-
-  try {
-    await fetch(`${operationEndpoint()}/${encodeURIComponent(record[idKey])}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch)
-    });
-  } catch (error) {
-    console.info("Atualização mantida localmente.", error.message);
-  }
-
-  addAudit(`${module.name}: ${record[idKey]} atualizado para ${record[progressField]}.`);
-  showToast("Status atualizado.");
-  await renderModule();
+  await patchActiveRecord(record[idKey], patch, `${record[idKey]} avançou para ${patch[progressField]}.`);
 };
 
 const clearLiveTimers = () => {
@@ -1687,9 +1748,161 @@ const setupInternalAi = () => {
   });
 };
 
+const progressFieldLabels = {
+  status: "Status",
+  stage: "Etapa",
+  phase: "Fase",
+  result: "Resultado",
+  progress: "Progresso"
+};
+
+const renderRecordProgressField = (record, config) => {
+  const progressField = getRecordProgressField(record, config);
+
+  if (!progressField || config.fields.some((field) => field.name === progressField)) {
+    return "";
+  }
+
+  const label = progressFieldLabels[progressField] || progressField;
+
+  if (typeof record[progressField] === "number" || progressField === "progress") {
+    return renderOperationField(
+      {
+        name: progressField,
+        label,
+        type: "number",
+        required: false
+      },
+      record[progressField] ?? 0
+    );
+  }
+
+  return renderOperationField(
+    {
+      name: progressField,
+      label,
+      type: "select",
+      options: config.statusFlow || processFlows[state.activeModule] || [],
+      required: false
+    },
+    record[progressField] ?? ""
+  );
+};
+
+const recordPatchFromForm = (form, config, record) => {
+  const payload = operationPayloadFromForm(form, config);
+  const progressField = getRecordProgressField(record, config);
+
+  if (progressField && !config.fields.some((field) => field.name === progressField)) {
+    const progressInput = form.elements[progressField];
+
+    if (progressInput) {
+      payload[progressField] = typeof record[progressField] === "number" || progressField === "progress"
+        ? Number(progressInput.value || 0)
+        : progressInput.value;
+    }
+  }
+
+  return payload;
+};
+
+const ensureRecordDialog = () => {
+  let dialog = qs("#recordDialog");
+
+  if (dialog) {
+    return dialog;
+  }
+
+  dialog = document.createElement("dialog");
+  dialog.id = "recordDialog";
+  dialog.className = "record-dialog";
+  dialog.innerHTML = `
+    <form id="recordForm">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow" id="recordEyebrow">Registro</p>
+          <h2 id="recordTitle">Editar registro</h2>
+          <p class="record-summary" id="recordSummary"></p>
+        </div>
+        <button class="icon-close" type="button" data-record-close aria-label="Fechar">×</button>
+      </div>
+      <div class="record-fields" id="recordFields"></div>
+      <div class="dialog-actions">
+        <button type="button" class="secondary-action" data-record-close>Cancelar</button>
+        <button type="button" class="secondary-action" id="recordAdvanceButton">Avançar status</button>
+        <button type="submit" class="primary-action" id="recordSaveButton">Salvar alterações</button>
+      </div>
+    </form>
+  `;
+  document.body.appendChild(dialog);
+
+  dialog.querySelectorAll("[data-record-close]").forEach((button) => {
+    button.addEventListener("click", () => dialog.close());
+  });
+
+  dialog.querySelector("#recordAdvanceButton").addEventListener("click", async () => {
+    const recordId = dialog.dataset.recordId;
+    dialog.close();
+    await advanceActiveRecord(recordId);
+  });
+
+  dialog.querySelector("#recordForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const recordId = dialog.dataset.recordId;
+    const { config, record } = findActiveRecord(recordId);
+
+    if (!record) {
+      showToast("Registro não encontrado.");
+      dialog.close();
+      return;
+    }
+
+    const patch = recordPatchFromForm(event.currentTarget, config, record);
+    dialog.close();
+    await patchActiveRecord(recordId, patch, "Alterações salvas.");
+  });
+
+  return dialog;
+};
+
+const openRecordEditor = (recordId) => {
+  const { config, idKey, record } = findActiveRecord(recordId);
+
+  if (!record) {
+    showToast("Registro não encontrado.");
+    return;
+  }
+
+  const module = getModule();
+  const progressField = getRecordProgressField(record, config);
+  const dialog = ensureRecordDialog();
+  dialog.dataset.recordId = record[idKey];
+  qs("#recordEyebrow").textContent = `${module.name} / ${config.collection}`;
+  qs("#recordTitle").textContent = `Editar ${record[idKey]}`;
+  qs("#recordSummary").innerHTML = progressField
+    ? `<span class="badge ${badgeClass(record[progressField])}">${escapeHtml(record[progressField])}</span>`
+    : "Registro operacional";
+  qs("#recordFields").innerHTML = [
+    ...config.fields.map((field) => renderOperationField(field, record[field.name] ?? "")),
+    renderRecordProgressField(record, config)
+  ].join("");
+  qs("#recordAdvanceButton").hidden = !progressField;
+  dialog.showModal();
+};
+
 const setupModuleActions = () => {
   qs("#moduleView")?.querySelector("[data-action='export']")?.addEventListener("click", exportActiveCollection);
   qs("#moduleView")?.querySelector("[data-action='advance']")?.addEventListener("click", advanceActiveRecord);
+  qs("#moduleView")
+    ?.querySelectorAll("[data-record-action='advance']")
+    .forEach((button) => {
+      button.addEventListener("click", () => advanceActiveRecord(button.dataset.recordId));
+    });
+  qs("#moduleView")
+    ?.querySelectorAll("[data-record-action='edit']")
+    .forEach((button) => {
+      button.addEventListener("click", () => openRecordEditor(button.dataset.recordId));
+    });
   qs("#moduleView")
     ?.querySelectorAll("[data-table-action='analyze']")
     .forEach((button) => {

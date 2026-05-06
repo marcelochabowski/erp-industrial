@@ -1,6 +1,6 @@
 {
   "name": "erp-industrial",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "ERP industrial responsivo com modulos de logistica, financeiro, RH, producao ao vivo, automacao PLC, administracao e IA interna.",
   "main": "src/server.js",
   "type": "module",
