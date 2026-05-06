@@ -9,7 +9,7 @@
       content="ERP industrial responsivo com módulos de logística, financeiro, RH, produção, estoque, manutenção, TI e gestão corporativa."
     />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="stylesheet" href="/styles.css?v=19" />
+    <link rel="stylesheet" href="/styles.css?v=20" />
     <title>NexaForge ERP Industrial</title>
   </head>
   <body>
@@ -102,69 +102,77 @@
         </aside>
 
         <main class="workspace">
-          <section class="page-header">
-            <div>
-              <p class="breadcrumb">ERP Industrial / Operação</p>
-              <h1>NexaForge ERP</h1>
-              <p class="page-subtitle">Ambiente operacional para produção, finanças, pessoas, automação PLC e I.A interna.</p>
-            </div>
-            <div class="page-actions">
-              <span class="object-status positive">Turno B ativo</span>
-              <span class="object-status neutral">Unidade SP</span>
-              <span class="object-status warning">3 exceções</span>
-            </div>
+          <section class="dashboard-view" id="dashboardView">
+            <section class="page-header dashboard-header">
+              <div>
+                <p class="breadcrumb">ERP Industrial / Dashboard</p>
+                <h1>Dashboard executivo</h1>
+                <p class="page-subtitle">Visão principal da operação com indicadores, exceções e módulos críticos.</p>
+              </div>
+              <div class="page-actions">
+                <span class="object-status positive">Turno B ativo</span>
+                <span class="object-status neutral">Unidade SP</span>
+                <span class="object-status warning">3 exceções</span>
+              </div>
+            </section>
+
+            <section class="dashboard-kpis" id="kpiGrid" aria-label="Indicadores principais"></section>
+
+            <section class="dashboard-grid">
+              <div class="main-panel dashboard-panel">
+                <div class="section-heading">
+                  <div>
+                    <p class="eyebrow">Módulos principais</p>
+                    <h2>Áreas críticas da operação</h2>
+                  </div>
+                </div>
+                <section class="module-tiles" id="moduleTiles" aria-label="Módulos principais do ERP"></section>
+              </div>
+
+              <aside class="insights-panel">
+                <div class="section-heading compact">
+                  <div>
+                    <p class="eyebrow">Worklist</p>
+                    <h2>Exceções</h2>
+                  </div>
+                </div>
+                <div id="alertsList" class="alerts-list"></div>
+
+                <div class="section-heading compact activity-title">
+                  <div>
+                    <p class="eyebrow">Auditoria</p>
+                    <h2>Últimas ações</h2>
+                  </div>
+                </div>
+                <div id="activityList" class="activity-list"></div>
+              </aside>
+            </section>
           </section>
 
-          <section class="module-access" aria-label="Seleção de módulo">
-            <div>
-              <p class="eyebrow">Módulo ativo</p>
-              <h2 id="activeModuleTitle">Logística</h2>
-              <p id="activeModuleDescription">Escolha uma área para abrir a operação do ERP.</p>
-            </div>
-            <label class="module-select-label">
-              Módulo
-              <select id="moduleSelect"></select>
-            </label>
-            <div class="quick-module-row" id="quickModuleRow" aria-label="Atalhos de módulos"></div>
-          </section>
+          <section class="module-page" id="modulePageView" hidden>
+            <section class="module-route-bar">
+              <a class="back-link" href="/">Dashboard</a>
+              <label class="module-select-label">
+                Módulo
+                <select id="moduleSelect"></select>
+              </label>
+            </section>
 
-          <section class="content-grid">
-            <div class="main-panel">
-              <div class="section-heading module-heading object-heading">
-                <div>
-                  <p class="eyebrow">Operação ativa</p>
-                  <h2>Processos, registros e indicadores do módulo</h2>
-                </div>
+            <section class="module-access" aria-label="Módulo ativo">
+              <div>
+                <p class="eyebrow">Página do módulo</p>
+                <h1 id="activeModuleTitle">Logística</h1>
+                <p id="activeModuleDescription">Escolha uma área para abrir a operação do ERP.</p>
               </div>
-
-              <div id="moduleView" class="module-view"></div>
-            </div>
-
-            <aside class="insights-panel">
-              <div class="section-heading compact">
-                <div>
-                  <p class="eyebrow">Indicadores</p>
-                  <h2>Resumo executivo</h2>
-                </div>
+              <div class="page-actions">
+                <span class="object-status positive">Online</span>
+                <span class="object-status neutral">Unidade SP</span>
+                <span class="object-status warning">Monitorado</span>
               </div>
-              <section class="side-kpi-grid" id="kpiGrid" aria-label="Indicadores principais"></section>
+              <div class="quick-module-row" id="quickModuleRow" aria-label="Atalhos de módulos"></div>
+            </section>
 
-              <div class="section-heading compact">
-                <div>
-                  <p class="eyebrow">Worklist</p>
-                  <h2>Exceções</h2>
-                </div>
-              </div>
-              <div id="alertsList" class="alerts-list"></div>
-
-              <div class="section-heading compact activity-title">
-                <div>
-                  <p class="eyebrow">Auditoria</p>
-                  <h2>Últimas ações</h2>
-                </div>
-              </div>
-              <div id="activityList" class="activity-list"></div>
-            </aside>
+            <div id="moduleView" class="module-view module-page-content"></div>
           </section>
         </main>
       </div>
@@ -201,6 +209,6 @@
       </form>
     </dialog>
 
-    <script src="/app.js?v=19" type="module"></script>
+    <script src="/app.js?v=20" type="module"></script>
   </body>
 </html>

@@ -20,10 +20,12 @@ const state = {
   summary: null,
   activeModule: "logistics",
   moduleData: {},
-  filter: ""
+  filter: "",
+  isModulePage: false
 };
 
 const STORAGE_KEY = "nexaforge-erp-functional-data-v1";
+const dashboardModuleIds = ["production", "logistics", "finance", "inventory", "automation", "it", "admin", "ai"];
 
 const moduleOperations = {
   logistics: {
@@ -437,11 +439,19 @@ const focusModuleView = () => {
   });
 };
 
+const modulePath = (moduleId) => `/modules/${moduleId}`;
+
+const routeModuleId = () => window.location.pathname.match(/^\/modules\/([^/]+)\/?$/)?.[1];
+
+const openModulePage = (moduleId) => {
+  window.location.href = modulePath(moduleId);
+};
+
 const createButton = (module, className = "nav-item") => {
   const button = document.createElement("button");
   const signal = moduleSignals[module.id];
   button.type = "button";
-  button.className = `${className}${module.id === state.activeModule ? " active" : ""}`;
+  button.className = `${className}${state.isModulePage && module.id === state.activeModule ? " active" : ""}`;
   button.style.setProperty("--module-accent", module.accent);
   button.innerHTML = `
     <span class="nav-icon">${icons[module.icon] || ""}</span>
@@ -450,7 +460,7 @@ const createButton = (module, className = "nav-item") => {
       <small>${signal?.label || "Aplicativo"}</small>
     </span>
   `;
-  button.addEventListener("click", () => selectModule(module.id));
+  button.addEventListener("click", () => openModulePage(module.id));
   return button;
 };
 
@@ -493,7 +503,7 @@ const renderTabs = () => {
     button.style.setProperty("--module-accent", module.accent);
     button.setAttribute("role", "tab");
     button.setAttribute("aria-selected", module.id === state.activeModule ? "true" : "false");
-    button.addEventListener("click", () => selectModule(module.id));
+    button.addEventListener("click", () => openModulePage(module.id));
     tabs.appendChild(button);
   });
 };
@@ -539,7 +549,7 @@ const renderModuleSelector = () => {
       .map((module) => `<option value="${module.id}">${module.name}</option>`)
       .join("");
     select.value = state.activeModule;
-    select.onchange = (event) => selectModule(event.target.value);
+    select.onchange = (event) => openModulePage(event.target.value);
   }
 
   if (quickRow) {
@@ -555,13 +565,19 @@ const renderModuleSelector = () => {
       .join("");
 
     quickRow.querySelectorAll(".quick-module").forEach((button) => {
-      button.addEventListener("click", () => selectModule(button.dataset.module));
+      button.addEventListener("click", () => openModulePage(button.dataset.module));
     });
   }
 };
 
 const renderKpis = () => {
-  qs("#kpiGrid").innerHTML = state.summary.kpis
+  const grid = qs("#kpiGrid");
+
+  if (!grid) {
+    return;
+  }
+
+  grid.innerHTML = state.summary.kpis
     .map((kpi, index) => {
       const bars = [34, 58, 46, 74, 61, 82, 69].map((value, barIndex) => (value + index * 7 + barIndex * 3) % 86);
       return `
@@ -590,11 +606,13 @@ const renderModuleTiles = () => {
     return;
   }
 
-  tiles.innerHTML = state.summary.modules
+  const dashboardModules = state.summary.modules.filter((module) => dashboardModuleIds.includes(module.id));
+
+  tiles.innerHTML = dashboardModules
     .map((module) => {
       const signal = moduleSignals[module.id];
       return `
-        <button class="module-tile${module.id === state.activeModule ? " active" : ""}" type="button" data-module="${module.id}" style="--module-accent: ${module.accent}">
+        <button class="module-tile" type="button" data-module="${module.id}" style="--module-accent: ${module.accent}">
           <span class="tile-icon">${icons[module.icon] || ""}</span>
           <span class="tile-body">
             <strong>${module.name}</strong>
@@ -610,20 +628,26 @@ const renderModuleTiles = () => {
     .join("");
 
   tiles.querySelectorAll(".module-tile").forEach((tile) => {
-    tile.addEventListener("click", () => selectModule(tile.dataset.module));
+    tile.addEventListener("click", () => openModulePage(tile.dataset.module));
   });
 
   applyTableFilter();
 };
 
 const renderAlerts = () => {
+  const alertsList = qs("#alertsList");
+
+  if (!alertsList) {
+    return;
+  }
+
   const colors = {
     critical: "#bb0000",
     warning: "#e9730c",
     info: "#0a6ed1"
   };
 
-  qs("#alertsList").innerHTML = state.summary.alerts
+  alertsList.innerHTML = state.summary.alerts
     .map(
       (alert) => `
         <article class="alert-item" style="--alert-color: ${colors[alert.severity] || colors.info}">
@@ -640,7 +664,13 @@ const renderAlerts = () => {
 };
 
 const renderActivity = () => {
-  qs("#activityList").innerHTML = state.summary.auditTrail
+  const activityList = qs("#activityList");
+
+  if (!activityList) {
+    return;
+  }
+
+  activityList.innerHTML = state.summary.auditTrail
     .map(
       (item) => `
         <article class="activity-item">
@@ -1755,17 +1785,17 @@ const setupWorkspaceLinks = () => {
       const action = button.dataset.workspaceAction;
 
       if (action === "overview") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.location.href = "/";
         return;
       }
 
       if (action === "operations") {
-        await selectModule("production");
+        openModulePage("production");
         return;
       }
 
       if (action === "admin") {
-        await selectModule("admin");
+        openModulePage("admin");
       }
     });
   });
@@ -1820,23 +1850,56 @@ const registerServiceWorker = async () => {
   }
 };
 
+const setViewMode = (mode) => {
+  document.body.classList.toggle("dashboard-mode", mode === "dashboard");
+  document.body.classList.toggle("module-mode", mode === "module");
+  qs("#dashboardView").hidden = mode !== "dashboard";
+  qs("#modulePageView").hidden = mode !== "module";
+};
+
+const renderDashboard = () => {
+  setViewMode("dashboard");
+  document.title = "NexaForge ERP | Dashboard";
+  renderNavigation();
+  renderKpis();
+  renderModuleTiles();
+  renderAlerts();
+  renderActivity();
+};
+
+const renderModulePage = async () => {
+  setViewMode("module");
+  const module = getModule();
+  document.title = `NexaForge ERP | ${module.name}`;
+  await renderModule();
+};
+
 const bootstrap = async () => {
   state.summary = await apiGet("/api/summary");
-  const requestedModule = new URLSearchParams(window.location.search).get("module") || window.location.hash.slice(1);
+  const routedModule = routeModuleId();
+  const legacyModule = new URLSearchParams(window.location.search).get("module") || window.location.hash.slice(1);
+  const requestedModule = routedModule || legacyModule;
 
   if (state.summary.modules.some((module) => module.id === requestedModule)) {
     state.activeModule = requestedModule;
+    state.isModulePage = true;
+
+    if (!routedModule) {
+      window.history.replaceState({}, "", modulePath(requestedModule));
+    }
   }
 
-  renderHeroMetrics();
-  renderKpis();
-  renderAlerts();
-  renderActivity();
   setupDrawer();
   setupWorkspaceLinks();
   setupDialog();
   setupSearch();
-  await renderModule();
+
+  if (state.isModulePage) {
+    await renderModulePage();
+  } else {
+    renderDashboard();
+  }
+
   await registerServiceWorker();
 };
 

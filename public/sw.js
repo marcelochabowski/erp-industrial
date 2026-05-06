@@ -1,4 +1,4 @@
-const CACHE_NAME = "erp-industrial-v19";
+const CACHE_NAME = "erp-industrial-v20";
 const ASSETS = ["/", "/styles.css", "/app.js", "/manifest.webmanifest", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
